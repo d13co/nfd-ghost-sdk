@@ -68,6 +68,15 @@ export class NfdReader extends Contract {
     return this.getEmptyNfdNano();
   }
 
+  private getEmptyNfdNano(): NfdNano {
+    return {
+      name: "",
+      asaID: 0,
+      owner: Global.zeroAddress,
+      version: "",
+    } satisfies NfdNano;
+  }
+
   private getName(appId: Application): readonly [bytes, boolean] {
     return op.AppGlobal.getExBytes(appId, Bytes`i.name`);
   }
@@ -92,15 +101,6 @@ export class NfdReader extends Contract {
     return exists ? op.btoi(versionBytes.at(0)) - 48 : 0;
   }
 
-  private getEmptyNfdNano(): NfdNano {
-    return {
-      name: "",
-      asaID: 0,
-      owner: Global.zeroAddress,
-      version: "",
-    } satisfies NfdNano;
-  }
-
   @abimethod({ readonly: true, onCreate: "allow" })
   getTinyViewFromAppIds(appIds: Application[]): NfdTiny {
     for (const appId of appIds) {
@@ -113,8 +113,8 @@ export class NfdReader extends Contract {
             encodeArc4({
               name: name.toString(),
               owner: this.getOwner(appId),
-              caAlgo: this.getCaAlgo(appId),
-              unverifiedCaAlgo: this.getUnverifiedCaAlgo(appId),
+              caAlgo: this.getCaAlgo(appId, majorVersion),
+              unverifiedCaAlgo: this.getUnverifiedCaAlgo(appId, majorVersion),
               version: this.getVersion(appId),
               expired: false,
             } satisfies NfdTiny)
@@ -164,8 +164,8 @@ export class NfdReader extends Contract {
         const tinyView: NfdTiny = {
           name: name.toString(),
           owner: this.getOwner(appId),
-          caAlgo: hasVerifiedCaAlgoBox ? this.getCaAlgo(appId) : [],
-          unverifiedCaAlgo: hasUnverifiedCaAlgoBox ? this.getUnverifiedCaAlgo(appId) : [],
+          caAlgo: hasVerifiedCaAlgoBox ? this.getCaAlgo(appId, majorVersion) : [],
+          unverifiedCaAlgo: hasUnverifiedCaAlgoBox ? this.getUnverifiedCaAlgo(appId, majorVersion) : [],
           version: this.getVersion(appId),
           expired: false,
         };
@@ -188,18 +188,17 @@ export class NfdReader extends Contract {
     } satisfies NfdTiny;
   }
 
-  private getCaAlgo(appId: Application): Account[] {
-    return sliceAccounts(this.readField(appId, Bytes`v.caAlgo.0.as`));
+  private getCaAlgo(appId: Application, majorVersion: uint64): Account[] {
+    return sliceAccounts(this.readField(appId, Bytes`v.caAlgo.0.as`, majorVersion));
   }
 
-  private getUnverifiedCaAlgo(appId: Application): Account[] {
-    return sliceAccounts(this.readFieldv2(appId, Bytes`v.unverifiedCaAlgo.0.as`));
+  private getUnverifiedCaAlgo(appId: Application, majorVersion: uint64): Account[] {
+    return sliceAccounts(this.readField(appId, Bytes`u.caalgo`, majorVersion));
   }
 
-  private readField(appId: Application, fieldName: bytes): bytes {
-    const version = this.getMajorVersion(appId);
-    if (version === 2) return this.readFieldv2(appId, fieldName);
-    if (version === 3) return this.readFieldv3(appId, fieldName);
+  private readField(appId: Application, fieldName: bytes, majorVersion: uint64): bytes {
+    if (majorVersion === 2) return this.readFieldv2(appId, fieldName);
+    if (majorVersion === 3) return this.readFieldv3(appId, fieldName);
     return Bytes``;
   }
 

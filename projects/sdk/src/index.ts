@@ -2,6 +2,7 @@ import { AlgorandClient } from "@algorandfoundation/algokit-utils"
 import { chunked } from "./utils/chunked.js"
 import { NfdNano, NfdReaderSDK, NfdTiny } from "./generated/NfdReaderSDK.js"
 import pMap from "p-map"
+import { ALGORAND_ZERO_ADDRESS_STRING } from "algosdk"
 
 export class NfdGhostSDK {
   static baseSDK = NfdReaderSDK
@@ -94,12 +95,13 @@ export class NfdGhostSDK {
 
   @chunked(36)
   async getTinyViewFromAppIdsV3(appIds: number[] | bigint[]): Promise<NfdTiny[]> {
-    console.log("Fetching v3 NFDs:", appIds.length)
     const extraFee = (appIds.length * 2000).microAlgo()
-    return this.baseSDK.getTinyViewFromAppIds({
-      methodArgsOrArgsArray: { appIds },
-      extraMethodCallArgs: { extraFee },
-    })
+    return filterZeroAddresses(
+      await this.baseSDK.getTinyViewFromAppIds({
+        methodArgsOrArgsArray: { appIds },
+        extraMethodCallArgs: { extraFee },
+      }),
+    )
   }
 
   @chunked(40)
@@ -114,7 +116,7 @@ export class NfdGhostSDK {
         return {
           appId: BigInt(appId),
           hasVerifiedCaAlgoBox: boxNames.includes("v.caAlgo.0.as"),
-          hasUnverifiedCaAlgoBox: boxNames.includes("v.unverifiedCaAlgo.0.as"),
+          hasUnverifiedCaAlgoBox: boxNames.includes("u.caalgo"),
         }
       },
       { concurrency: this.boxReadConcurrency },
@@ -134,9 +136,19 @@ export class NfdGhostSDK {
         },
       },
     )
-    return this.baseSDK.getTinyViewFromAppIdsV2({
-      methodArgsOrArgsArray: { arg: callArgs },
-      extraMethodCallArgs: { extraFee },
-    })
+    return filterZeroAddresses(
+      await this.baseSDK.getTinyViewFromAppIdsV2({
+        methodArgsOrArgsArray: { arg: callArgs },
+        extraMethodCallArgs: { extraFee },
+      }),
+    )
   }
+}
+
+function filterZeroAddresses(tinyView: NfdTiny[]): NfdTiny[] {
+  return tinyView.map((tv) => ({
+    ...tv,
+    caAlgo: tv.caAlgo.filter((address) => address !== ALGORAND_ZERO_ADDRESS_STRING),
+    unverifiedCaAlgo: tv.unverifiedCaAlgo.filter((address) => address !== ALGORAND_ZERO_ADDRESS_STRING),
+  }))
 }

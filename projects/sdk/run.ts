@@ -36,7 +36,7 @@ const appIds =
   const end = Date.now()
 
   data.forEach((data, idx) => {
-    // console.log(`App ID: ${appIds[idx]}`, data)
+    console.log(`App ID: ${appIds[idx]}`, data)
   })
   console.log(`Elapsed time: ${end - start} ms, fetched: ${data.length} items, appids=${appIds.length}`)
 })()
