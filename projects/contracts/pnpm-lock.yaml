@@ -36,6 +36,9 @@ importers:
       dotenv:
         specifier: ^16.4.7
         version: 16.6.1
+      ghostkit:
+        specifier: ^0.0.4
+        version: 0.0.4
       ts-node-dev:
         specifier: ^2.0.0
         version: 2.0.0(@types/node@25.0.3)(typescript@5.9.3)
@@ -307,6 +310,10 @@ packages:
 
   function-bind@1.1.2:
     resolution: {integrity: sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA==}
+
+  ghostkit@0.0.4:
+    resolution: {integrity: sha512-QhTxrO0xK6EX0KwNTa3lXE01ifb/PVNbOOaojPsBRULtr56/oesbyRaM5U9KvRgMGPzo4b77RzZ+MvT06TmyeA==}
+    hasBin: true
 
   glob-parent@5.1.2:
     resolution: {integrity: sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow==}
@@ -857,6 +864,11 @@ snapshots:
     optional: true
 
   function-bind@1.1.2: {}
+
+  ghostkit@0.0.4:
+    dependencies:
+      '@algorandfoundation/algokit-utils': 9.2.0(algosdk@3.5.2)
+      algosdk: 3.5.2
 
   glob-parent@5.1.2:
     dependencies:

@@ -5,7 +5,10 @@
       "name": "ROOT"
     },
     {
-      "path": "projects/nfd-ghost-sdk"
+      "path": "projects/contracts"
+    },
+    {
+      "path": "projects/sdk"
     }
   ],
   "settings": {

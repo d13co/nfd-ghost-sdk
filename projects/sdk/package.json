@@ -1,0 +1,27 @@
+{
+  "name": "nfd-ghost-sdk",
+  "version": "0.0.1",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "prebuild": "cp ../contracts/smart_contracts/artifacts/nfd_reader/NfdReaderSDK.ts src/generated",
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.11.0",
+  "dependencies": {
+    "@algorandfoundation/algokit-utils": "^9.2.0",
+    "algosdk": "3.5.2",
+    "p-map": "^7.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "tsx": "^4.21.0"
+  }
+}

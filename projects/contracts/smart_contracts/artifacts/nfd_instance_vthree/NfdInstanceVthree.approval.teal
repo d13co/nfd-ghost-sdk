@@ -1,0 +1,54 @@
+#pragma version 11
+#pragma typetrack false
+
+// @algorandfoundation/algorand-typescript/arc4/index.d.ts::Contract.approvalProgram() -> uint64:
+main:
+    // smart_contracts/nfd_instance_vthree/contract.algo.ts:3
+    // export class NfdInstanceVthree extends Contract {
+    txn NumAppArgs
+    bz main___algots__.defaultCreate@5
+    pushbytes 0x6c13ede4 // method "readField(byte[])byte[]"
+    txna ApplicationArgs 0
+    match main_readField_route@3
+    err
+
+main_readField_route@3:
+    // smart_contracts/nfd_instance_vthree/contract.algo.ts:4
+    // readField(fieldName: bytes): bytes {
+    txn OnCompletion
+    !
+    txn ApplicationID
+    &&
+    assert // OnCompletion must be NoOp && can only call when not creating
+    b readField
+
+main___algots__.defaultCreate@5:
+    // smart_contracts/nfd_instance_vthree/contract.algo.ts:3
+    // export class NfdInstanceVthree extends Contract {
+    txn OnCompletion
+    !
+    txn ApplicationID
+    !
+    &&
+    assert // OnCompletion must be NoOp && can only call when creating
+    pushint 1 // 1
+    return
+
+
+// smart_contracts/nfd_instance_vthree/contract.algo.ts::NfdInstanceVthree.readField[routing]() -> void:
+readField:
+    // smart_contracts/nfd_instance_vthree/contract.algo.ts:4
+    // readField(fieldName: bytes): bytes {
+    txna ApplicationArgs 1
+    dup
+    pushint 0 // 0
+    extract_uint16 // on error: invalid array length header
+    pushint 2 // 2
+    +
+    swap
+    len
+    ==
+    assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>
+    // smart_contracts/nfd_instance_vthree/contract.algo.ts:5
+    // err('stub')
+    err // stub

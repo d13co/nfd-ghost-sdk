@@ -1,0 +1,1228 @@
+#pragma version 11
+#pragma typetrack false
+
+// @algorandfoundation/algorand-typescript/arc4/index.d.ts::Contract.approvalProgram() -> uint64:
+main:
+    intcblock 0 2 1 8
+    bytecblock "" 0x0000 "i.name" "0" 0x0029 0x00 0x151f7c75 "v.unverifiedCaAlgo.0.as" "i.ver"
+    // smart_contracts/nfd_reader/contract.algo.ts:43
+    // export class NfdReader extends Contract {
+    txn OnCompletion
+    !
+    assert // OnCompletion must be NoOp
+    pushbytess 0xba048d07 0x0dfd3e2b 0xc90be218 0x97b6afaf // method "getNamesFromAppIds(uint64[])string", method "getNanoViewFromAppIds(uint64[])(string,uint64,address,string)", method "getTinyViewFromAppIds(uint64[])(string,address,address[],address[],string,bool)", method "getTinyViewFromAppIdsV2((uint64[],(bool[],bool[])))(string,address,address[],address[],string,bool)"
+    txna ApplicationArgs 0
+    match getNamesFromAppIds getNanoViewFromAppIds getTinyViewFromAppIds getTinyViewFromAppIdsV2
+    err
+
+
+// smart_contracts/nfd_reader/contract.algo.ts::sliceAccounts(raw: bytes) -> bytes:
+sliceAccounts:
+    // smart_contracts/nfd_reader/contract.algo.ts:228
+    // function sliceAccounts(raw: bytes): Account[] {
+    proto 1 1
+    bytec_0 // ""
+    // smart_contracts/nfd_reader/contract.algo.ts:229
+    // const accounts: Account[] = [];
+    bytec_1 // 0x0000
+    // smart_contracts/nfd_reader/contract.algo.ts:230
+    // for (let i: uint64 = 0; i < raw.length / 32; i++) {
+    intc_0 // 0
+
+sliceAccounts_while_top@1:
+    // smart_contracts/nfd_reader/contract.algo.ts:230
+    // for (let i: uint64 = 0; i < raw.length / 32; i++) {
+    frame_dig -1
+    len
+    dup
+    frame_bury 0
+    pushint 32 // 32
+    /
+    frame_dig 2
+    >
+    bz sliceAccounts_after_while@3
+    // smart_contracts/nfd_reader/contract.algo.ts:231
+    // accounts.push(Account(raw.slice(i * 32, (i + 1) * 32)));
+    frame_dig 2
+    dup
+    pushint 32 // 32
+    *
+    dup
+    frame_dig 0
+    dup
+    cover 3
+    >=
+    dig 2
+    swap
+    select
+    uncover 2
+    intc_2 // 1
+    +
+    dup
+    frame_bury 2
+    pushint 32 // 32
+    *
+    dup
+    dig 3
+    >=
+    swap
+    uncover 3
+    uncover 2
+    select
+    dup
+    dig 2
+    <
+    dig 2
+    swap
+    select
+    frame_dig -1
+    cover 2
+    substring3
+    frame_dig 1
+    dup
+    uncover 2
+    concat // on error: max array length exceeded
+    swap
+    intc_0 // 0
+    extract_uint16
+    intc_2 // 1
+    +
+    itob
+    extract 6 2
+    replace2 0
+    frame_bury 1
+    b sliceAccounts_while_top@1
+
+sliceAccounts_after_while@3:
+    // smart_contracts/nfd_reader/contract.algo.ts:233
+    // return accounts;
+    frame_dig 1
+    frame_bury 0
+    retsub
+
+
+// smart_contracts/nfd_reader/contract.algo.ts::NfdReader.getNamesFromAppIds[routing]() -> void:
+getNamesFromAppIds:
+    intc_0 // 0
+    // smart_contracts/nfd_reader/contract.algo.ts:44
+    // @abimethod({ readonly: true, onCreate: "allow" })
+    txna ApplicationArgs 1
+    dupn 2
+    intc_0 // 0
+    extract_uint16 // on error: invalid array length header
+    dup
+    cover 2
+    intc_3 // 8
+    *
+    intc_1 // 2
+    +
+    swap
+    len
+    ==
+    assert // invalid number of bytes for arc4.dynamic_array<application>
+    intc_0 // 0
+
+getNamesFromAppIds_for_header@2:
+    // smart_contracts/nfd_reader/contract.algo.ts:46
+    // for (const appId of appIds) {
+    dup
+    dig 2
+    <
+    bz getNamesFromAppIds_after_for@8
+    dig 2
+    extract 2 0
+    dig 1
+    intc_3 // 8
+    *
+    extract_uint64
+    // smart_contracts/nfd_reader/contract.algo.ts:47
+    // const [name, exists] = op.AppGlobal.getExBytes(appId, Bytes`i.name`);
+    bytec_2 // "i.name"
+    app_global_get_ex
+    swap
+    bury 5
+    // smart_contracts/nfd_reader/contract.algo.ts:48
+    // if (exists) {
+    bz getNamesFromAppIds_else_body@5
+    // smart_contracts/nfd_reader/contract.algo.ts:49
+    // log(encodeArc4(name));
+    dig 3
+    dup
+    len
+    itob
+    extract 6 2
+    swap
+    concat
+    log
+
+getNamesFromAppIds_after_if_else@6:
+    dup
+    intc_2 // 1
+    +
+    bury 1
+    b getNamesFromAppIds_for_header@2
+
+getNamesFromAppIds_else_body@5:
+    // smart_contracts/nfd_reader/contract.algo.ts:51
+    // log(encodeArc4(""));
+    bytec_1 // 0x0000
+    log
+    b getNamesFromAppIds_after_if_else@6
+
+getNamesFromAppIds_after_for@8:
+    // smart_contracts/nfd_reader/contract.algo.ts:44
+    // @abimethod({ readonly: true, onCreate: "allow" })
+    pushbytes 0x151f7c750000
+    log
+    intc_2 // 1
+    return
+
+
+// smart_contracts/nfd_reader/contract.algo.ts::NfdReader.getNanoViewFromAppIds[routing]() -> void:
+getNanoViewFromAppIds:
+    intc_0 // 0
+    dup
+    bytec_0 // ""
+    // smart_contracts/nfd_reader/contract.algo.ts:57
+    // @abimethod({ readonly: true, onCreate: "allow" })
+    txna ApplicationArgs 1
+    dupn 2
+    intc_0 // 0
+    extract_uint16 // on error: invalid array length header
+    dup
+    cover 2
+    intc_3 // 8
+    *
+    intc_1 // 2
+    +
+    swap
+    len
+    ==
+    assert // invalid number of bytes for arc4.dynamic_array<application>
+    intc_0 // 0
+
+getNanoViewFromAppIds_for_header@2:
+    // smart_contracts/nfd_reader/contract.algo.ts:59
+    // for (const appId of appIds) {
+    dup
+    dig 2
+    <
+    bz getNanoViewFromAppIds_after_for@8
+    dig 2
+    extract 2 0
+    dig 1
+    intc_3 // 8
+    *
+    extract_uint64
+    dup
+    bury 5
+    // smart_contracts/nfd_reader/contract.algo.ts:77
+    // return op.AppGlobal.getExBytes(appId, Bytes`i.name`);
+    bytec_2 // "i.name"
+    app_global_get_ex
+    swap
+    bury 6
+    // smart_contracts/nfd_reader/contract.algo.ts:61
+    // if (exists) {
+    bz getNanoViewFromAppIds_else_body@5
+    // smart_contracts/nfd_reader/contract.algo.ts:81
+    // const [asaIdBytes, exists] = op.AppGlobal.getExBytes(appId, Bytes`i.asaid`);
+    dig 3
+    pushbytes "i.asaid"
+    app_global_get_ex
+    swap
+    bury 7
+    // smart_contracts/nfd_reader/contract.algo.ts:82
+    // return exists ? op.btoi(asaIdBytes) : 0;
+    bz getNanoViewFromAppIds_ternary_false@11
+    dig 5
+    btoi
+
+getNanoViewFromAppIds_ternary_merge@12:
+    // smart_contracts/nfd_reader/contract.algo.ts:65
+    // owner: this.getOwner(appId),
+    dig 4
+    dup
+    callsub getOwner
+    // smart_contracts/nfd_reader/contract.algo.ts:66
+    // version: this.getVersion(appId),
+    swap
+    callsub getVersion
+    // smart_contracts/nfd_reader/contract.algo.ts:62-67
+    // const nanoView: NfdNano = {
+    //   name: name.toString(),
+    //   asaID: this.getAsaId(appId),
+    //   owner: this.getOwner(appId),
+    //   version: this.getVersion(appId),
+    // };
+    dig 7
+    dup
+    len
+    itob
+    extract 6 2
+    swap
+    concat
+    dup
+    len
+    pushint 44 // 44
+    +
+    uncover 4
+    itob
+    pushbytes 0x002c
+    swap
+    concat
+    uncover 4
+    concat
+    dig 3
+    len
+    itob
+    extract 6 2
+    uncover 4
+    concat
+    uncover 2
+    itob
+    extract 6 2
+    uncover 2
+    swap
+    concat
+    uncover 2
+    concat
+    swap
+    concat
+    // smart_contracts/nfd_reader/contract.algo.ts:68
+    // log(encodeArc4(nanoView));
+    log
+
+getNanoViewFromAppIds_after_if_else@6:
+    dup
+    intc_2 // 1
+    +
+    bury 1
+    b getNanoViewFromAppIds_for_header@2
+
+getNanoViewFromAppIds_ternary_false@11:
+    // smart_contracts/nfd_reader/contract.algo.ts:82
+    // return exists ? op.btoi(asaIdBytes) : 0;
+    intc_0 // 0
+    b getNanoViewFromAppIds_ternary_merge@12
+
+getNanoViewFromAppIds_else_body@5:
+    // smart_contracts/nfd_reader/contract.algo.ts:101-106
+    // return {
+    //   name: "",
+    //   asaID: 0,
+    //   owner: Global.zeroAddress,
+    //   version: "",
+    // } satisfies NfdNano;
+    pushbytes base32(AAWAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALQAAAAAA)
+    // smart_contracts/nfd_reader/contract.algo.ts:70
+    // log(encodeArc4(this.getEmptyNfdNano()));
+    log
+    b getNanoViewFromAppIds_after_if_else@6
+
+getNanoViewFromAppIds_after_for@8:
+    // smart_contracts/nfd_reader/contract.algo.ts:57
+    // @abimethod({ readonly: true, onCreate: "allow" })
+    pushbytes base32(CUPXY5IAFQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC4AAAAAAA)
+    log
+    intc_2 // 1
+    return
+
+
+// smart_contracts/nfd_reader/contract.algo.ts::NfdReader.getTinyViewFromAppIds[routing]() -> void:
+getTinyViewFromAppIds:
+    intc_0 // 0
+    dup
+    bytec_0 // ""
+    dupn 2
+    // smart_contracts/nfd_reader/contract.algo.ts:109
+    // @abimethod({ readonly: true, onCreate: "allow" })
+    txna ApplicationArgs 1
+    dupn 2
+    intc_0 // 0
+    extract_uint16 // on error: invalid array length header
+    dup
+    cover 2
+    intc_3 // 8
+    *
+    intc_1 // 2
+    +
+    swap
+    len
+    ==
+    assert // invalid number of bytes for arc4.dynamic_array<application>
+    intc_0 // 0
+
+getTinyViewFromAppIds_for_header@2:
+    // smart_contracts/nfd_reader/contract.algo.ts:111
+    // for (const appId of appIds) {
+    dup
+    dig 2
+    <
+    bz getTinyViewFromAppIds_after_for@15
+    dig 2
+    extract 2 0
+    dig 1
+    intc_3 // 8
+    *
+    extract_uint64
+    dup
+    bury 6
+    // smart_contracts/nfd_reader/contract.algo.ts:77
+    // return op.AppGlobal.getExBytes(appId, Bytes`i.name`);
+    bytec_2 // "i.name"
+    app_global_get_ex
+    swap
+    bury 8
+    // smart_contracts/nfd_reader/contract.algo.ts:113
+    // if (exists) {
+    bz getTinyViewFromAppIds_else_body@12
+    // smart_contracts/nfd_reader/contract.algo.ts:114
+    // const majorVersion = this.getMajorVersion(appId);
+    dig 4
+    callsub getMajorVersion
+    // smart_contracts/nfd_reader/contract.algo.ts:115
+    // const expired = majorVersion === 3 ? this.getExpired(appId) : false;
+    pushint 3 // 3
+    ==
+    dup
+    bury 5
+    bz getTinyViewFromAppIds_ternary_false@6
+    // smart_contracts/nfd_reader/contract.algo.ts:147
+    // const [expiredBytes, exists] = op.AppGlobal.getExBytes(appId, Bytes`i.expirationTime`);
+    dig 4
+    pushbytes "i.expirationTime"
+    app_global_get_ex
+    swap
+    bury 9
+    // smart_contracts/nfd_reader/contract.algo.ts:148
+    // if (exists) {
+    bz getTinyViewFromAppIds_after_if_else@18
+    // smart_contracts/nfd_reader/contract.algo.ts:149
+    // const expirationTime = op.btoi(expiredBytes);
+    dig 7
+    btoi
+    // smart_contracts/nfd_reader/contract.algo.ts:150
+    // return Global.latestTimestamp >= expirationTime;
+    global LatestTimestamp
+    <=
+
+getTinyViewFromAppIds_after_inlined_smart_contracts/nfd_reader/contract.algo.ts::NfdReader.getExpired@19:
+    bury 6
+
+getTinyViewFromAppIds_ternary_merge@7:
+    // smart_contracts/nfd_reader/contract.algo.ts:116
+    // if (majorVersion === 3 && !expired) {
+    dig 3
+    bz getTinyViewFromAppIds_else_body@10
+    dig 5
+    bnz getTinyViewFromAppIds_else_body@10
+    // smart_contracts/nfd_reader/contract.algo.ts:120
+    // owner: this.getOwner(appId),
+    dig 4
+    dup
+    callsub getOwner
+    // smart_contracts/nfd_reader/contract.algo.ts:121
+    // caAlgo: this.getCaAlgo(appId),
+    dig 1
+    callsub getCaAlgo
+    // smart_contracts/nfd_reader/contract.algo.ts:201
+    // return sliceAccounts(this.readFieldv2(appId, Bytes`v.unverifiedCaAlgo.0.as`));
+    dig 2
+    bytec 7 // "v.unverifiedCaAlgo.0.as"
+    callsub readFieldv2
+    callsub sliceAccounts
+    // smart_contracts/nfd_reader/contract.algo.ts:123
+    // version: this.getVersion(appId),
+    uncover 3
+    callsub getVersion
+    // smart_contracts/nfd_reader/contract.algo.ts:118-125
+    // encodeArc4({
+    //   name: name.toString(),
+    //   owner: this.getOwner(appId),
+    //   caAlgo: this.getCaAlgo(appId),
+    //   unverifiedCaAlgo: this.getUnverifiedCaAlgo(appId),
+    //   version: this.getVersion(appId),
+    //   expired: false,
+    // } satisfies NfdTiny)
+    dig 10
+    dup
+    len
+    itob
+    extract 6 2
+    swap
+    concat
+    dup
+    len
+    pushint 41 // 41
+    +
+    bytec 4 // 0x0029
+    uncover 6
+    concat
+    dig 1
+    itob
+    extract 6 2
+    concat
+    dig 5
+    len
+    uncover 2
+    +
+    dup
+    itob
+    extract 6 2
+    uncover 2
+    swap
+    concat
+    dig 4
+    len
+    uncover 2
+    +
+    dig 3
+    len
+    itob
+    extract 6 2
+    uncover 4
+    concat
+    swap
+    itob
+    extract 6 2
+    uncover 2
+    swap
+    concat
+    bytec 5 // 0x00
+    concat
+    uncover 2
+    concat
+    uncover 3
+    concat
+    uncover 2
+    concat
+    swap
+    concat
+    // smart_contracts/nfd_reader/contract.algo.ts:117-126
+    // log(
+    //   encodeArc4({
+    //     name: name.toString(),
+    //     owner: this.getOwner(appId),
+    //     caAlgo: this.getCaAlgo(appId),
+    //     unverifiedCaAlgo: this.getUnverifiedCaAlgo(appId),
+    //     version: this.getVersion(appId),
+    //     expired: false,
+    //   } satisfies NfdTiny)
+    // );
+    log
+
+getTinyViewFromAppIds_after_if_else@13:
+    dup
+    intc_2 // 1
+    +
+    bury 1
+    b getTinyViewFromAppIds_for_header@2
+
+getTinyViewFromAppIds_else_body@10:
+    // smart_contracts/nfd_reader/contract.algo.ts:131
+    // owner: this.getOwner(appId),
+    dig 4
+    dup
+    callsub getOwner
+    // smart_contracts/nfd_reader/contract.algo.ts:134
+    // version: this.getVersion(appId),
+    swap
+    callsub getVersion
+    // smart_contracts/nfd_reader/contract.algo.ts:129-136
+    // encodeArc4({
+    //   name: name.toString(),
+    //   owner: this.getOwner(appId),
+    //   caAlgo: [] as Account[],
+    //   unverifiedCaAlgo: [] as Account[],
+    //   version: this.getVersion(appId),
+    //   expired,
+    // } satisfies NfdTiny)
+    dig 8
+    dup
+    len
+    itob
+    extract 6 2
+    swap
+    concat
+    dup
+    len
+    pushint 41 // 41
+    +
+    bytec 4 // 0x0029
+    uncover 4
+    concat
+    dig 1
+    itob
+    extract 6 2
+    concat
+    swap
+    intc_1 // 2
+    +
+    dup
+    itob
+    extract 6 2
+    uncover 2
+    swap
+    concat
+    swap
+    intc_1 // 2
+    +
+    dig 3
+    len
+    itob
+    extract 6 2
+    uncover 4
+    concat
+    swap
+    itob
+    extract 6 2
+    uncover 2
+    swap
+    concat
+    bytec 5 // 0x00
+    intc_0 // 0
+    dig 10
+    setbit
+    concat
+    uncover 2
+    concat
+    pushbytes 0x00000000
+    concat
+    swap
+    concat
+    // smart_contracts/nfd_reader/contract.algo.ts:128-137
+    // log(
+    //   encodeArc4({
+    //     name: name.toString(),
+    //     owner: this.getOwner(appId),
+    //     caAlgo: [] as Account[],
+    //     unverifiedCaAlgo: [] as Account[],
+    //     version: this.getVersion(appId),
+    //     expired,
+    //   } satisfies NfdTiny)
+    // );
+    log
+    b getTinyViewFromAppIds_after_if_else@13
+
+getTinyViewFromAppIds_after_if_else@18:
+    // smart_contracts/nfd_reader/contract.algo.ts:152
+    // return false;
+    intc_0 // 0
+    // smart_contracts/nfd_reader/contract.algo.ts:115
+    // const expired = majorVersion === 3 ? this.getExpired(appId) : false;
+    b getTinyViewFromAppIds_after_inlined_smart_contracts/nfd_reader/contract.algo.ts::NfdReader.getExpired@19
+
+getTinyViewFromAppIds_ternary_false@6:
+    // smart_contracts/nfd_reader/contract.algo.ts:115
+    // const expired = majorVersion === 3 ? this.getExpired(appId) : false;
+    intc_0 // 0
+    bury 6
+    b getTinyViewFromAppIds_ternary_merge@7
+
+getTinyViewFromAppIds_else_body@12:
+    // smart_contracts/nfd_reader/contract.algo.ts:140
+    // log(encodeArc4(this.getEmptyNfdTiny("0")));
+    bytec_3 // "0"
+    callsub getEmptyNfdTiny
+    log
+    b getTinyViewFromAppIds_after_if_else@13
+
+getTinyViewFromAppIds_after_for@15:
+    // smart_contracts/nfd_reader/contract.algo.ts:143
+    // return this.getEmptyNfdTiny("0");
+    bytec_3 // "0"
+    callsub getEmptyNfdTiny
+    // smart_contracts/nfd_reader/contract.algo.ts:109
+    // @abimethod({ readonly: true, onCreate: "allow" })
+    bytec 6 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_2 // 1
+    return
+
+
+// smart_contracts/nfd_reader/contract.algo.ts::NfdReader.getTinyViewFromAppIdsV2[routing]() -> void:
+getTinyViewFromAppIdsV2:
+    intc_0 // 0
+    dupn 3
+    bytec_0 // ""
+    dupn 2
+    // smart_contracts/nfd_reader/contract.algo.ts:155
+    // @abimethod({ readonly: true, onCreate: "allow" })
+    txna ApplicationArgs 1
+    dupn 2
+    len
+    dig 1
+    intc_0 // 0
+    extract_uint16 // on error: invalid tuple encoding
+    dup
+    cover 3
+    dup
+    pushint 4 // 4
+    ==
+    assert // invalid tail pointer at index 0 of ((len+uint64[]),((len+bool1[]),(len+bool1[])))
+    dig 2
+    swap
+    dig 2
+    substring3
+    intc_0 // 0
+    extract_uint16 // on error: invalid array length header
+    intc_3 // 8
+    *
+    pushint 6 // 6
+    +
+    dig 2
+    intc_1 // 2
+    extract_uint16 // on error: invalid tuple encoding
+    dup
+    cover 4
+    dup
+    dig 2
+    ==
+    assert // invalid tail pointer at index 1 of ((len+uint64[]),((len+bool1[]),(len+bool1[])))
+    uncover 3
+    swap
+    dig 3
+    substring3
+    dup
+    cover 3
+    dup
+    len
+    dig 1
+    intc_0 // 0
+    extract_uint16 // on error: invalid tuple encoding
+    dup
+    cover 5
+    dup
+    pushint 4 // 4
+    ==
+    assert // invalid tail pointer at index 0 of ((len+bool1[]),(len+bool1[]))
+    dig 2
+    swap
+    dig 2
+    substring3
+    intc_0 // 0
+    extract_uint16 // on error: invalid array length header
+    pushint 7 // 7
+    +
+    intc_3 // 8
+    /
+    pushint 6 // 6
+    +
+    dig 2
+    intc_1 // 2
+    extract_uint16 // on error: invalid tuple encoding
+    dup
+    cover 6
+    dup
+    dig 2
+    ==
+    assert // invalid tail pointer at index 1 of ((len+bool1[]),(len+bool1[]))
+    uncover 3
+    swap
+    uncover 3
+    substring3
+    dup
+    cover 4
+    intc_0 // 0
+    extract_uint16 // on error: invalid array length header
+    dup
+    cover 4
+    pushint 7 // 7
+    +
+    intc_3 // 8
+    /
+    intc_1 // 2
+    +
+    +
+    +
+    ==
+    assert // invalid number of bytes for smart_contracts/nfd_reader/contract.algo.ts::AppWithCaBoxHints
+    // smart_contracts/nfd_reader/contract.algo.ts:157
+    // for (let i: uint64 = 0; i < arg.appIds.length; i++) {
+    intc_0 // 0
+
+getTinyViewFromAppIdsV2_while_top@2:
+    // smart_contracts/nfd_reader/contract.algo.ts:157
+    // for (let i: uint64 = 0; i < arg.appIds.length; i++) {
+    dig 8
+    dig 8
+    dig 8
+    substring3
+    dup
+    bury 17
+    intc_0 // 0
+    extract_uint16 // on error: invalid array length header
+    dig 1
+    >
+    bz getTinyViewFromAppIdsV2_after_while@15
+    // smart_contracts/nfd_reader/contract.algo.ts:157-158
+    // for (let i: uint64 = 0; i < arg.appIds.length; i++) {
+    //   const appId = arg.appIds[i];
+    dig 15
+    extract 2 0
+    dig 1
+    dup
+    cover 2
+    intc_3 // 8
+    *
+    // smart_contracts/nfd_reader/contract.algo.ts:158
+    // const appId = arg.appIds[i];
+    extract_uint64
+    dup
+    cover 2
+    bury 14
+    // smart_contracts/nfd_reader/contract.algo.ts:159
+    // const hasVerifiedCaAlgoBox = arg.boxHints.hasVerifiedCaAlgoBox[i]
+    dig 7
+    dig 7
+    dig 7
+    substring3
+    dup
+    intc_0 // 0
+    extract_uint16 // on error: invalid array length header
+    dig 2
+    >
+    assert // index access is out of bounds
+    dig 1
+    pushint 16 // 16
+    +
+    swap
+    dig 1
+    getbit
+    bury 13
+    // smart_contracts/nfd_reader/contract.algo.ts:159-160
+    // const hasVerifiedCaAlgoBox = arg.boxHints.hasVerifiedCaAlgoBox[i]
+    // const hasUnverifiedCaAlgoBox = arg.boxHints.hasUnverifiedCaAlgoBox[i]
+    swap
+    dig 4
+    <
+    assert // index access is out of bounds
+    dig 4
+    swap
+    getbit
+    bury 12
+    // smart_contracts/nfd_reader/contract.algo.ts:77
+    // return op.AppGlobal.getExBytes(appId, Bytes`i.name`);
+    bytec_2 // "i.name"
+    app_global_get_ex
+    swap
+    bury 16
+    // smart_contracts/nfd_reader/contract.algo.ts:163
+    // if (exists) {
+    bz getTinyViewFromAppIdsV2_else_body@13
+    // smart_contracts/nfd_reader/contract.algo.ts:164
+    // const majorVersion = this.getMajorVersion(appId);
+    dig 11
+    callsub getMajorVersion
+    // smart_contracts/nfd_reader/contract.algo.ts:165
+    // if (majorVersion !== 2) {
+    intc_1 // 2
+    !=
+    bz getTinyViewFromAppIdsV2_after_if_else@6
+    // smart_contracts/nfd_reader/contract.algo.ts:166
+    // log("ERR:NV2");
+    pushbytes "ERR:NV2"
+    log
+    // smart_contracts/nfd_reader/contract.algo.ts:167
+    // err();
+    err
+
+getTinyViewFromAppIdsV2_after_if_else@6:
+    // smart_contracts/nfd_reader/contract.algo.ts:171
+    // owner: this.getOwner(appId),
+    dig 11
+    callsub getOwner
+    bury 13
+    // smart_contracts/nfd_reader/contract.algo.ts:172
+    // caAlgo: hasVerifiedCaAlgoBox ? this.getCaAlgo(appId) : [],
+    dig 9
+    bz getTinyViewFromAppIdsV2_ternary_false@8
+    dig 11
+    callsub getCaAlgo
+    bury 14
+
+getTinyViewFromAppIdsV2_ternary_merge@9:
+    // smart_contracts/nfd_reader/contract.algo.ts:173
+    // unverifiedCaAlgo: hasUnverifiedCaAlgoBox ? this.getUnverifiedCaAlgo(appId) : [],
+    dig 10
+    bz getTinyViewFromAppIdsV2_ternary_false@11
+    // smart_contracts/nfd_reader/contract.algo.ts:201
+    // return sliceAccounts(this.readFieldv2(appId, Bytes`v.unverifiedCaAlgo.0.as`));
+    dig 11
+    bytec 7 // "v.unverifiedCaAlgo.0.as"
+    callsub readFieldv2
+    callsub sliceAccounts
+
+getTinyViewFromAppIdsV2_ternary_merge@12:
+    // smart_contracts/nfd_reader/contract.algo.ts:174
+    // version: this.getVersion(appId),
+    dig 12
+    callsub getVersion
+    // smart_contracts/nfd_reader/contract.algo.ts:169-176
+    // const tinyView: NfdTiny = {
+    //   name: name.toString(),
+    //   owner: this.getOwner(appId),
+    //   caAlgo: hasVerifiedCaAlgoBox ? this.getCaAlgo(appId) : [],
+    //   unverifiedCaAlgo: hasUnverifiedCaAlgoBox ? this.getUnverifiedCaAlgo(appId) : [],
+    //   version: this.getVersion(appId),
+    //   expired: false,
+    // };
+    dig 16
+    dup
+    len
+    itob
+    extract 6 2
+    swap
+    concat
+    dup
+    len
+    pushint 41 // 41
+    +
+    bytec 4 // 0x0029
+    dig 17
+    concat
+    dig 1
+    itob
+    extract 6 2
+    concat
+    dig 18
+    dup
+    cover 3
+    len
+    uncover 2
+    +
+    dup
+    itob
+    extract 6 2
+    uncover 2
+    swap
+    concat
+    uncover 5
+    dup
+    cover 3
+    len
+    uncover 2
+    +
+    dig 5
+    len
+    itob
+    extract 6 2
+    uncover 6
+    concat
+    swap
+    itob
+    extract 6 2
+    uncover 2
+    swap
+    concat
+    bytec 5 // 0x00
+    concat
+    uncover 4
+    concat
+    uncover 3
+    concat
+    uncover 2
+    concat
+    swap
+    concat
+    // smart_contracts/nfd_reader/contract.algo.ts:177
+    // log(encodeArc4(tinyView));
+    log
+
+getTinyViewFromAppIdsV2_after_if_else@14:
+    // smart_contracts/nfd_reader/contract.algo.ts:157
+    // for (let i: uint64 = 0; i < arg.appIds.length; i++) {
+    dup
+    intc_2 // 1
+    +
+    bury 1
+    b getTinyViewFromAppIdsV2_while_top@2
+
+getTinyViewFromAppIdsV2_ternary_false@11:
+    // smart_contracts/nfd_reader/contract.algo.ts:173
+    // unverifiedCaAlgo: hasUnverifiedCaAlgoBox ? this.getUnverifiedCaAlgo(appId) : [],
+    bytec_1 // 0x0000
+    b getTinyViewFromAppIdsV2_ternary_merge@12
+
+getTinyViewFromAppIdsV2_ternary_false@8:
+    // smart_contracts/nfd_reader/contract.algo.ts:172
+    // caAlgo: hasVerifiedCaAlgoBox ? this.getCaAlgo(appId) : [],
+    bytec_1 // 0x0000
+    bury 14
+    b getTinyViewFromAppIdsV2_ternary_merge@9
+
+getTinyViewFromAppIdsV2_else_body@13:
+    // smart_contracts/nfd_reader/contract.algo.ts:179
+    // log(encodeArc4(this.getEmptyNfdTiny("0")));
+    bytec_3 // "0"
+    callsub getEmptyNfdTiny
+    log
+    b getTinyViewFromAppIdsV2_after_if_else@14
+
+getTinyViewFromAppIdsV2_after_while@15:
+    // smart_contracts/nfd_reader/contract.algo.ts:182
+    // return this.getEmptyNfdTiny("0");
+    bytec_3 // "0"
+    callsub getEmptyNfdTiny
+    // smart_contracts/nfd_reader/contract.algo.ts:155
+    // @abimethod({ readonly: true, onCreate: "allow" })
+    bytec 6 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_2 // 1
+    return
+
+
+// smart_contracts/nfd_reader/contract.algo.ts::NfdReader.getOwner(appId: uint64) -> bytes:
+getOwner:
+    // smart_contracts/nfd_reader/contract.algo.ts:85
+    // private getOwner(appId: Application): Account {
+    proto 1 1
+    // smart_contracts/nfd_reader/contract.algo.ts:86
+    // const [ownerBytes, exists] = op.AppGlobal.getExBytes(appId, Bytes`i.owner.a`);
+    frame_dig -1
+    pushbytes "i.owner.a"
+    app_global_get_ex
+    // smart_contracts/nfd_reader/contract.algo.ts:87
+    // return exists ? Account(ownerBytes) : Global.zeroAddress;
+    bz getOwner_ternary_false@2
+    frame_dig 0
+
+getOwner_ternary_merge@3:
+    // smart_contracts/nfd_reader/contract.algo.ts:87
+    // return exists ? Account(ownerBytes) : Global.zeroAddress;
+    swap
+    retsub
+
+getOwner_ternary_false@2:
+    // smart_contracts/nfd_reader/contract.algo.ts:87
+    // return exists ? Account(ownerBytes) : Global.zeroAddress;
+    global ZeroAddress
+    b getOwner_ternary_merge@3
+
+
+// smart_contracts/nfd_reader/contract.algo.ts::NfdReader.getVersion(appId: uint64) -> bytes:
+getVersion:
+    // smart_contracts/nfd_reader/contract.algo.ts:90
+    // private getVersion(appId: Application): string {
+    proto 1 1
+    // smart_contracts/nfd_reader/contract.algo.ts:91
+    // const [versionBytes, exists] = op.AppGlobal.getExBytes(appId, Bytes`i.ver`);
+    frame_dig -1
+    bytec 8 // "i.ver"
+    app_global_get_ex
+    // smart_contracts/nfd_reader/contract.algo.ts:92
+    // return exists ? versionBytes.toString() : "";
+    bz getVersion_ternary_false@2
+    frame_dig 0
+
+getVersion_ternary_merge@3:
+    // smart_contracts/nfd_reader/contract.algo.ts:92
+    // return exists ? versionBytes.toString() : "";
+    swap
+    retsub
+
+getVersion_ternary_false@2:
+    // smart_contracts/nfd_reader/contract.algo.ts:92
+    // return exists ? versionBytes.toString() : "";
+    bytec_0 // ""
+    b getVersion_ternary_merge@3
+
+
+// smart_contracts/nfd_reader/contract.algo.ts::NfdReader.getMajorVersion(appId: uint64) -> uint64:
+getMajorVersion:
+    // smart_contracts/nfd_reader/contract.algo.ts:95
+    // private getMajorVersion(appId: Application): uint64 {
+    proto 1 1
+    // smart_contracts/nfd_reader/contract.algo.ts:96
+    // const [versionBytes, exists] = op.AppGlobal.getExBytes(appId, Bytes`i.ver`);
+    frame_dig -1
+    bytec 8 // "i.ver"
+    app_global_get_ex
+    // smart_contracts/nfd_reader/contract.algo.ts:97
+    // return exists ? op.btoi(versionBytes.at(0)) - 48 : 0;
+    bz getMajorVersion_ternary_false@2
+    frame_dig 0
+    intc_0 // 0
+    getbyte
+    pushint 48 // 48
+    -
+
+getMajorVersion_ternary_merge@3:
+    // smart_contracts/nfd_reader/contract.algo.ts:97
+    // return exists ? op.btoi(versionBytes.at(0)) - 48 : 0;
+    swap
+    retsub
+
+getMajorVersion_ternary_false@2:
+    // smart_contracts/nfd_reader/contract.algo.ts:97
+    // return exists ? op.btoi(versionBytes.at(0)) - 48 : 0;
+    intc_0 // 0
+    b getMajorVersion_ternary_merge@3
+
+
+// smart_contracts/nfd_reader/contract.algo.ts::NfdReader.getEmptyNfdTiny(version: bytes) -> bytes:
+getEmptyNfdTiny:
+    // smart_contracts/nfd_reader/contract.algo.ts:185
+    // private getEmptyNfdTiny(version: string): NfdTiny {
+    proto 1 1
+    // smart_contracts/nfd_reader/contract.algo.ts:186-193
+    // return {
+    //   name: "",
+    //   owner: Global.zeroAddress,
+    //   caAlgo: [],
+    //   unverifiedCaAlgo: [],
+    //   version,
+    //   expired: false,
+    // } satisfies NfdTiny;
+    frame_dig -1
+    len
+    itob
+    extract 6 2
+    frame_dig -1
+    concat
+    pushbytes base32(AAUQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFMAC2ABPAAAAAAAAAAAA)
+    swap
+    concat
+    retsub
+
+
+// smart_contracts/nfd_reader/contract.algo.ts::NfdReader.getCaAlgo(appId: uint64) -> bytes:
+getCaAlgo:
+    // smart_contracts/nfd_reader/contract.algo.ts:196
+    // private getCaAlgo(appId: Application): Account[] {
+    proto 1 1
+    // smart_contracts/nfd_reader/contract.algo.ts:205
+    // const version = this.getMajorVersion(appId);
+    frame_dig -1
+    callsub getMajorVersion
+    dup
+    // smart_contracts/nfd_reader/contract.algo.ts:206
+    // if (version === 2) return this.readFieldv2(appId, fieldName);
+    intc_1 // 2
+    ==
+    bz getCaAlgo_after_if_else@3
+    frame_dig -1
+    // smart_contracts/nfd_reader/contract.algo.ts:197
+    // return sliceAccounts(this.readField(appId, Bytes`v.caAlgo.0.as`));
+    pushbytes "v.caAlgo.0.as"
+    // smart_contracts/nfd_reader/contract.algo.ts:206
+    // if (version === 2) return this.readFieldv2(appId, fieldName);
+    callsub readFieldv2
+
+getCaAlgo_after_inlined_smart_contracts/nfd_reader/contract.algo.ts::NfdReader.readField@6:
+    // smart_contracts/nfd_reader/contract.algo.ts:197
+    // return sliceAccounts(this.readField(appId, Bytes`v.caAlgo.0.as`));
+    callsub sliceAccounts
+    swap
+    retsub
+
+getCaAlgo_after_if_else@3:
+    // smart_contracts/nfd_reader/contract.algo.ts:207
+    // if (version === 3) return this.readFieldv3(appId, fieldName);
+    frame_dig 0
+    pushint 3 // 3
+    ==
+    bz getCaAlgo_after_if_else@5
+    // smart_contracts/nfd_reader/contract.algo.ts:221-224
+    // return compileArc4(NfdInstanceVthree).call.readField({
+    //   appId,
+    //   args: [fieldName],
+    // }).returnValue;
+    itxn_begin
+    pushbytes 0x6c13ede4 // method "readField(byte[])byte[]"
+    itxn_field ApplicationArgs
+    // smart_contracts/nfd_reader/contract.algo.ts:223
+    // args: [fieldName],
+    pushbytes 0x000d762e6361416c676f2e302e6173
+    itxn_field ApplicationArgs
+    // smart_contracts/nfd_reader/contract.algo.ts:221-224
+    // return compileArc4(NfdInstanceVthree).call.readField({
+    //   appId,
+    //   args: [fieldName],
+    // }).returnValue;
+    intc_0 // 0
+    itxn_field OnCompletion
+    frame_dig -1
+    itxn_field ApplicationID
+    pushint 6 // appl
+    itxn_field TypeEnum
+    intc_0 // 0
+    itxn_field Fee
+    itxn_submit
+    itxn LastLog
+    dup
+    extract 4 0
+    dig 1
+    extract 0 4
+    bytec 6 // 0x151f7c75
+    ==
+    assert // Bytes has valid prefix
+    dup
+    intc_0 // 0
+    extract_uint16 // on error: invalid array length header
+    intc_1 // 2
+    +
+    swap
+    len
+    ==
+    assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>
+    extract 6 0
+    // smart_contracts/nfd_reader/contract.algo.ts:197
+    // return sliceAccounts(this.readField(appId, Bytes`v.caAlgo.0.as`));
+    b getCaAlgo_after_inlined_smart_contracts/nfd_reader/contract.algo.ts::NfdReader.readField@6
+
+getCaAlgo_after_if_else@5:
+    // smart_contracts/nfd_reader/contract.algo.ts:208
+    // return Bytes``;
+    bytec_0 // ""
+    // smart_contracts/nfd_reader/contract.algo.ts:197
+    // return sliceAccounts(this.readField(appId, Bytes`v.caAlgo.0.as`));
+    b getCaAlgo_after_inlined_smart_contracts/nfd_reader/contract.algo.ts::NfdReader.readField@6
+
+
+// smart_contracts/nfd_reader/contract.algo.ts::NfdReader.readFieldv2(appId: uint64, fieldName: bytes) -> bytes:
+readFieldv2:
+    // smart_contracts/nfd_reader/contract.algo.ts:211
+    // private readFieldv2(appId: Application, fieldName: bytes): bytes {
+    proto 2 1
+    // smart_contracts/nfd_reader/contract.algo.ts:212-217
+    // return itxn
+    //   .applicationCall({
+    //     appId: appId,
+    //     appArgs: [Bytes`read_property`, fieldName],
+    //   })
+    //   .submit().lastLog;
+    itxn_begin
+    // smart_contracts/nfd_reader/contract.algo.ts:215
+    // appArgs: [Bytes`read_property`, fieldName],
+    pushbytes "read_property"
+    itxn_field ApplicationArgs
+    frame_dig -1
+    itxn_field ApplicationArgs
+    frame_dig -2
+    itxn_field ApplicationID
+    // smart_contracts/nfd_reader/contract.algo.ts:212-216
+    // return itxn
+    //   .applicationCall({
+    //     appId: appId,
+    //     appArgs: [Bytes`read_property`, fieldName],
+    //   })
+    pushint 6 // 6
+    itxn_field TypeEnum
+    intc_0 // 0
+    itxn_field Fee
+    // smart_contracts/nfd_reader/contract.algo.ts:212-217
+    // return itxn
+    //   .applicationCall({
+    //     appId: appId,
+    //     appArgs: [Bytes`read_property`, fieldName],
+    //   })
+    //   .submit().lastLog;
+    itxn_submit
+    itxn LastLog
+    retsub
