@@ -9,26 +9,26 @@ export class NfdGhostSDK {
   public algorand: AlgorandClient
   public registryAppId: bigint
   public baseSDK: NfdReaderSDK
-  public concurrency: number
-  public boxConcurrency: number
+  public methodConcurrency: number
+  public boxReadConcurrency: number
 
   constructor({
     algorand,
     registryAppId,
-    concurrency = 4,
-    boxConcurrency = 4,
+    methodConcurrency = 4,
+    boxReadConcurrency = 8,
     ghostAppId,
   }: {
     algorand: AlgorandClient
-    concurrency?: number
-    boxConcurrency?: number
+    methodConcurrency?: number
+    boxReadConcurrency?: number
     registryAppId: number | bigint
     ghostAppId?: bigint
   }) {
     this.algorand = algorand
     this.registryAppId = BigInt(registryAppId)
-    this.concurrency = concurrency
-    this.boxConcurrency = boxConcurrency
+    this.methodConcurrency = methodConcurrency
+    this.boxReadConcurrency = boxReadConcurrency
     this.baseSDK = new NfdReaderSDK({
       algorand: this.algorand,
       readerAccount: "Y76M3MSY6DKBRHBL7C3NNDXGS5IIMQVQVUAB6MP4XEMMGVF2QWNPL226CA",
@@ -37,8 +37,8 @@ export class NfdGhostSDK {
   }
 
   @chunked(128)
-  async getNamesFromAppIds(appIds: number[] | bigint[]): Promise<string[]> {
-    return this.baseSDK.getNamesFromAppIds({
+  async getVersionsFromAppIds(appIds: number[] | bigint[]): Promise<string[]> {
+    return this.baseSDK.getVersionsFromAppIds({
       methodArgsOrArgsArray: { appIds },
     })
   }
@@ -50,33 +50,51 @@ export class NfdGhostSDK {
     })
   }
 
-  @chunked(128)
+  @chunked(256)
   async getTinyViewFromAppIds(appIds: number[] | bigint[]): Promise<NfdTiny[]> {
-    // fetch v3 and v2 mixed
-    // v2 will be missing caAlgo fields
-    const tinyViews = await this.getTinyViewFromAppIdsV3(appIds)
+    appIds = appIds.map((id) => BigInt(id))
 
-    // v2 needs assistance: fetch boxes for v2 app IDs
-    const v2AppIds = appIds.filter((appId, idx) => {
-      const tinyView = tinyViews[idx]
-      return tinyView.version.startsWith("2")
-    })
+    const versions = await this.getVersionsFromAppIds(appIds)
 
-    // call v2 with hints
-    const v2Results = await this.getTinyViewFromAppIdsV2(v2AppIds.map((id) => BigInt(id)))
+    const [v2AppIds, v3AppIds] = appIds.reduce(
+      ([v2, v3], appId, idx) => {
+        const version = versions[idx]
+        if (version.startsWith("2")) {
+          v2.push(appId)
+        } else if (version.startsWith("3")) {
+          v3.push(appId)
+        } else {
+          throw new Error(`Unsupported NFD version for app ID ${appId}: ${version}`)
+        }
+        return [v2, v3]
+      },
+      [[], []] as [bigint[], bigint[]],
+    )
 
-    // replace results for v2 app IDs
-    for (let i = 0; i < v2AppIds.length; i++) {
-      const appId = v2AppIds[i]
-      const v2Result = v2Results[i]
-      const mainResultIdx = appIds.findIndex((id) => BigInt(id) === BigInt(appId))
-      tinyViews[mainResultIdx] = v2Result
+    const v3ResultsPromise = v3AppIds.length > 0 ? this.getTinyViewFromAppIdsV3(v3AppIds) : []
+    const v2ResultsPromise = v2AppIds.length > 0 ? this.getTinyViewFromAppIdsV2(v2AppIds) : []
+    const [v3Results, v2Results] = await Promise.all([v3ResultsPromise, v2ResultsPromise])
+
+    // merge results back into original order
+    let v2Index = 0
+    let v3Index = 0
+    const tinyViews: NfdTiny[] = []
+    for (const appId of appIds) {
+      const version = versions[tinyViews.length]
+      if (version.startsWith("2")) {
+        tinyViews.push(v2Results[v2Index])
+        v2Index++
+      } else if (version.startsWith("3")) {
+        tinyViews.push(v3Results[v3Index])
+        v3Index++
+      }
     }
     return tinyViews
   }
 
-  @chunked(40)
+  @chunked(36)
   async getTinyViewFromAppIdsV3(appIds: number[] | bigint[]): Promise<NfdTiny[]> {
+    console.log("Fetching v3 NFDs:", appIds.length)
     const extraFee = (appIds.length * 2000).microAlgo()
     return this.baseSDK.getTinyViewFromAppIds({
       methodArgsOrArgsArray: { appIds },
@@ -85,20 +103,21 @@ export class NfdGhostSDK {
   }
 
   @chunked(40)
-  async getTinyViewFromAppIdsV2(v2AppIds: number[] | bigint[]): Promise<NfdTiny[]> {
-    const extraFee = (v2AppIds.length * 2000).microAlgo()
+  async getTinyViewFromAppIdsV2(appIds: number[] | bigint[]): Promise<NfdTiny[]> {
+    // v2 needs assistance: fetch boxes for v2 app IDs
+    // call v2 with hints
+    const extraFee = (appIds.length * 2000).microAlgo()
     const v2Boxes = await pMap(
-      v2AppIds.map((id) => BigInt(id)),
+      appIds.map((id) => BigInt(id)),
       async (appId) => {
-        const boxNames = await this.algorand.app.getBoxNames(BigInt(appId))
-        const names = boxNames.map((bn) => bn.name)
+        const boxNames = (await this.algorand.app.getBoxNames(BigInt(appId))).map((bn) => bn.name)
         return {
           appId: BigInt(appId),
-          hasVerifiedCaAlgoBox: names.includes("v.caAlgo.0.as"),
-          hasUnverifiedCaAlgoBox: names.includes("v.unverifiedCaAlgo.0.as"),
+          hasVerifiedCaAlgoBox: boxNames.includes("v.caAlgo.0.as"),
+          hasUnverifiedCaAlgoBox: boxNames.includes("v.unverifiedCaAlgo.0.as"),
         }
       },
-      { concurrency: this.boxConcurrency },
+      { concurrency: this.boxReadConcurrency },
     )
     const callArgs = v2Boxes.reduce(
       (acc, curr) => {

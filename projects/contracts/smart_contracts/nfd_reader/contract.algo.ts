@@ -37,32 +37,14 @@ export type AppWithCaBoxHints = {
   boxHints: {
     hasVerifiedCaAlgoBox: boolean[];
     hasUnverifiedCaAlgoBox: boolean[];
-  }
+  };
 };
 
 export class NfdReader extends Contract {
   @abimethod({ readonly: true, onCreate: "allow" })
-  getNamesFromAppIds(appIds: Application[]): string {
-    for (const appId of appIds) {
-      const [name, exists] = op.AppGlobal.getExBytes(appId, Bytes`i.name`);
-      if (exists) {
-        log(encodeArc4(name));
-      } else {
-        log(encodeArc4(""));
-      }
-    }
-    return "";
-  }
-
-  @abimethod({ readonly: true, onCreate: "allow" })
   getVersionsFromAppIds(appIds: Application[]): string {
     for (const appId of appIds) {
-      const [name, exists] = op.AppGlobal.getExBytes(appId, Bytes`i.name`);
-      if (exists) {
-        log(encodeArc4(name));
-      } else {
-        log(encodeArc4(""));
-      }
+      log(encodeArc4(this.getVersion(appId)));
     }
     return "";
   }
@@ -169,8 +151,8 @@ export class NfdReader extends Contract {
   getTinyViewFromAppIdsV2(arg: AppWithCaBoxHints): NfdTiny {
     for (let i: uint64 = 0; i < arg.appIds.length; i++) {
       const appId = arg.appIds[i];
-      const hasVerifiedCaAlgoBox = arg.boxHints.hasVerifiedCaAlgoBox[i]
-      const hasUnverifiedCaAlgoBox = arg.boxHints.hasUnverifiedCaAlgoBox[i]
+      const hasVerifiedCaAlgoBox = arg.boxHints.hasVerifiedCaAlgoBox[i];
+      const hasUnverifiedCaAlgoBox = arg.boxHints.hasUnverifiedCaAlgoBox[i];
 
       const [name, exists] = this.getName(appId);
       if (exists) {

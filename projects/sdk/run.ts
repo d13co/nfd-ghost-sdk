@@ -4,7 +4,7 @@ import { NfdGhostSDK } from "./src"
 const sdk = new NfdGhostSDK({
   algorand: AlgorandClient.mainNet(),
   registryAppId: 21364625,
-  // concurrency: 1,
+  // methodConcurrency: 1,
 })
 
 // const appIds = process.argv.slice(2).map((id) => BigInt(id))
@@ -36,7 +36,7 @@ const appIds =
   const end = Date.now()
 
   data.forEach((data, idx) => {
-    console.log(`App ID: ${appIds[idx]}`, data)
+    // console.log(`App ID: ${appIds[idx]}`, data)
   })
-  console.log(`Elapsed time: ${end - start} ms`)
+  console.log(`Elapsed time: ${end - start} ms, fetched: ${data.length} items, appids=${appIds.length}`)
 })()
