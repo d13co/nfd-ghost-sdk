@@ -111,6 +111,56 @@ function unwrap(outcome: CallOutcome): NfdRecord[] {
   return outcome.records
 }
 
+/** A query of `getRecordsAt`: its NFDs, each read at every one of its rounds. */
+type PairGroup = { appIds: bigint[]; rounds: bigint[] }
+
+/** The most reads a `getRecordsAt` query makes for each pair asked for: an NFD is read at every round of its query. */
+const PAIR_WASTE = 16
+/** The queries still open to more pairs while packing: the latest ones, which hold the nearest rounds. */
+const OPEN_GROUPS = 32
+
+/**
+ * Packs the rounds each NFD is wanted at into queries of at most `maxRounds` rounds and `maxCalls` NFDs, each one HTTP
+ * request: an NFD's rounds are cut into runs of `maxRounds`, and each run, earliest rounds first, joins the first open
+ * query it fits in, so NFDs wanted at the same or nearby rounds share a query. A query reads all its NFDs at all its
+ * rounds, so a run only joins one while that stays within `PAIR_WASTE` reads per pair asked for.
+ */
+export function packPairs(
+  wanted: Map<bigint, Set<bigint>>,
+  { maxCalls, maxRounds }: { maxCalls: number; maxRounds: number },
+): PairGroup[] {
+  const ascending = (a: bigint, b: bigint) => (a < b ? -1 : a > b ? 1 : 0)
+  const items: { appId: bigint; rounds: bigint[] }[] = []
+  for (const [appId, set] of wanted) {
+    const rounds = [...set].sort(ascending)
+    for (let at = 0; at < rounds.length; at += maxRounds)
+      items.push({ appId, rounds: rounds.slice(at, at + maxRounds) })
+  }
+  items.sort((a, b) => ascending(a.rounds[0], b.rounds[0]))
+  type Group = { appIds: Set<bigint>; rounds: Set<bigint>; pairs: number }
+  const groups: Group[] = []
+  const open: Group[] = []
+  for (const item of items) {
+    let group = open.find((g) => {
+      const apps = g.appIds.size + (g.appIds.has(item.appId) ? 0 : 1)
+      if (apps > maxCalls) return false
+      let rounds = g.rounds.size
+      for (const round of item.rounds) if (!g.rounds.has(round) && ++rounds > maxRounds) return false
+      return apps * rounds <= PAIR_WASTE * (g.pairs + item.rounds.length)
+    })
+    if (!group) {
+      group = { appIds: new Set(), rounds: new Set(), pairs: 0 }
+      groups.push(group)
+      open.push(group)
+      if (open.length > OPEN_GROUPS) open.shift()
+    }
+    group.appIds.add(item.appId)
+    for (const round of item.rounds) group.rounds.add(round)
+    group.pairs += item.rounds.length
+  }
+  return groups.map((g) => ({ appIds: [...g.appIds], rounds: [...g.rounds].sort(ascending) }))
+}
+
 /** An NFD name as the registry keys it. */
 function normalizeName(name: string): string {
   return name.trim().toLowerCase()
@@ -339,6 +389,93 @@ export class NfdGhostSDK {
       (address, o) => this.reverseSpec(address, 0n, o),
       dedupe,
     )
+  }
+
+  /**
+   * Each NFD at its own round: the record of `appId` as of the end of `round` for each pair, in the order given, null
+   * as in `getRecords` and for a round before the registry was created. A round past the node's tip throws
+   * `FutureRoundError` before any query, and a failed read throws its error.
+   *
+   * Reads every NFD only at the rounds asked for it, unlike a series, which reads every key at every round: the pairs
+   * are packed into queries of at most 64 rounds (the node's `maxRounds`) and 1,024 NFDs (`maxCalls`), NFDs wanted at
+   * the same or nearby rounds together. Each query reads its NFDs at all its rounds, at most 16 reads per pair asked
+   * for. Pairs read before are taken from the cache, and everything a query read is cached. The first failed query
+   * cancels the others.
+   */
+  async getRecordsAt(
+    pairs: { appId: number | bigint; round: number | bigint }[],
+    opts: Omit<ReadOpts, "round"> = {},
+  ): Promise<(NfdRecord | null)[]> {
+    const { signal } = opts
+    const asked = pairs.map(({ appId, round }) => ({ appId: BigInt(appId), round: BigInt(round) }))
+    const pairKey = (appId: bigint, round: bigint) => `${appId}@${round}`
+    return abortable(signal, async () => {
+      const found = new Map<string, NfdRecord | null>()
+      // check every round first: one past the tip fails the whole read before any query
+      const rounds = [...new Set(asked.map((pair) => pair.round))]
+      const early = new Set<bigint>()
+      await Promise.all(
+        rounds.map((round) =>
+          this.roundFor({ round, signal }).catch((error: unknown) => {
+            if (!(error instanceof NfdNotDeployedError)) throw error
+            early.add(round)
+          }),
+        ),
+      )
+      const todo = new Map<bigint, Set<bigint>>()
+      await Promise.all(
+        asked.map(async ({ appId, round }) => {
+          const key = pairKey(appId, round)
+          if (found.has(key)) return
+          if (early.has(round)) return void found.set(key, null)
+          const cached = await this.shared.cache
+            .peek<NfdRecord[]>(this.cacheKey(round, opts.fields, `r|${appId}`))
+            ?.catch(() => undefined)
+          if (cached) return void found.set(key, cached[0] ?? null)
+          todo.set(appId, (todo.get(appId) ?? new Set()).add(round))
+        }),
+      )
+      if (todo.size) {
+        await this.ensureSupported(signal)
+        const o = await this.opts(opts.fields)
+        const groups = packPairs(todo, await this.shared.engine.requestLimits())
+        // the first failed query cancels the others
+        const controller = new AbortController()
+        const onAbort = () => controller.abort(signal!.reason)
+        signal?.addEventListener("abort", onAbort, { once: true })
+        try {
+          signal?.throwIfAborted()
+          await Promise.all(
+            groups.map(async (group) => {
+              const results = await this.shared.engine.run(
+                group.appIds.map((id) => this.recordSpec(id, o)),
+                group.rounds,
+                controller.signal,
+              )
+              for (const result of results) {
+                group.appIds.forEach((appId, i) => {
+                  const outcome = result.outcomes[i]
+                  const wanted = todo.get(appId)!.has(result.round)
+                  // a failure only counts for a pair asked for; the query reads every NFD at every round
+                  if (!outcome.ok) {
+                    if (wanted) throw outcome.error
+                    return
+                  }
+                  this.shared.cache.put(this.cacheKey(result.round, opts.fields, `r|${appId}`), outcome.records, false)
+                  if (wanted) found.set(pairKey(appId, result.round), outcome.records[0] ?? null)
+                })
+              }
+            }),
+          )
+        } catch (e) {
+          controller.abort(e)
+          throw e
+        } finally {
+          signal?.removeEventListener("abort", onAbort)
+        }
+      }
+      return asked.map(({ appId, round }) => found.get(pairKey(appId, round)) ?? null)
+    })
   }
 
   // ---------------------------------------------------------------------------------------------------------------

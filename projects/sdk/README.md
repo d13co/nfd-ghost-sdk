@@ -56,6 +56,7 @@ sdk.getSegmentsFor(address, parentAppId, opts?): Promise<NfdRecord[]>
 sdk.getRecordsSeries(appIds, rounds, opts?): Promise<SeriesPoint<Map<bigint, NfdRecord | null>>[]>
 sdk.resolveNamesSeries(names, rounds, opts?): Promise<SeriesPoint<Map<string, NfdRecord | null>>[]>
 sdk.reverseLookupSeries(addresses, rounds, opts?): Promise<SeriesPoint<Map<string, NfdRecord[]>>[]>
+sdk.getRecordsAt(pairs: { appId; round }[], opts?): Promise<(NfdRecord | null)[]>   // in the order given
 
 type ReadOpts = { round?: number | bigint; signal?: AbortSignal; fields?: ("caAlgo" | "avatar" | "bio")[] }  // fields default: all three
 type SeriesRounds = (number | bigint)[] | { from; to; points }
@@ -84,6 +85,7 @@ Expired and for-sale NFDs have their properties ignored (no `caAlgo`, avatar or 
 - **resolveNames**: the registry's `name/` box, else the v1 name lsig's `i.appid`, then checked against the app's `i.name`. Names are looked up lowercased; the map is keyed by the names as given.
 - **reverseLookup**: the union of the registry's `addr/algo/` box and the v1 address lsig's `i.apps0..15`, each checked to be an NFD, neither expired nor for sale, that lists the address in its `caAlgo` at the round. The registry box doesn't hold all v1 data, so both are read.
 - **getOwned**: two REST reads at the round find the candidates, the registry's `"O" ‖ owner ‖ appId` owner boxes (v3) and the NFD assets the address holds; one query keeps those whose `i.owner.a` is the address. Holding an NFD's asset isn't owning it. An asset is mapped to its NFD by its name; names over 32 bytes are cut short in asset names, so for those the reader finds the app among the 8 ids before the asset (NFDs mint their asset 3, 6 or 7 ids after their app) by its address being the asset's creator, then checks the app's `i.name` against the registry. Known gap: a v3 NFD owned at a round before owner boxes were written for it, whose asset sits in its app.
+- **getRecordsAt**: each NFD at its own rounds, such as every NFD an account touched at the rounds it changed. A series reads every key at every round; this packs the pairs into queries of at most 64 rounds and 1,024 NFDs, NFDs wanted at the same or nearby rounds together, and reads each query's NFDs at all its rounds, at most 16 reads per pair asked for. 1,000 pairs (200 NFDs at 5 rounds each) take 17 queries and about 12,000 evaluations. Results are as `getRecords` gives them, plus null for a round before the registry was created; a round past the tip throws `FutureRoundError` before any query, and a failed read of a pair asked for throws and cancels the other queries. Pairs already read come from the cache, and everything read is cached.
 - **getSegmentsFor**: the reverse lookup's and `getOwned`'s candidates, kept when `i.parentAppID` is the parent and the address is `i.owner.a` or, for v2 and v3 NFDs, in `v.caAlgo.0.as`, as Réti's `doesStakerMeetGating` checks (no state filter, as there). Réti reads `v.caAlgo.0.as` with the NFD's `read_property` method, which v1 NFDs don't have, so for a v1 segment only its owner passes. Réti takes the first one's `appId` as `valueToVerify`.
 
 ### Rounds, batching and caching

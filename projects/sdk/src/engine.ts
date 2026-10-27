@@ -59,6 +59,10 @@ type QueryRun = (
 const LIMIT_ERROR =
   /dynamic cost budget exceeded|program logs too large|too many log calls|query response too large|time ?out|timed out/i
 
+/** The node's usual query limits, for a node that doesn't say */
+const DEFAULT_MAX_CALLS = 1024
+const DEFAULT_MAX_ROUNDS = 64
+
 const RETRY_STATUSES = new Set([502, 503, 504])
 const MAX_RETRIES = 5
 
@@ -297,6 +301,12 @@ export class QueryEngine {
     } finally {
       this.slots.give(slots)
     }
+  }
+
+  /** The most calls and rounds one HTTP request takes: the node's query limits, else the usual 1,024 and 64. */
+  async requestLimits(): Promise<QueryLimits> {
+    const limits = await this.queryLimits()
+    return { maxCalls: limits?.maxCalls || DEFAULT_MAX_CALLS, maxRounds: limits?.maxRounds || DEFAULT_MAX_ROUNDS }
   }
 
   /** The node's query limits, read once: how many requests a query splits into. */

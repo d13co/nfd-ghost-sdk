@@ -67,6 +67,16 @@ export class ReadCache {
     return this.join(entry, signal) as Promise<T>
   }
 
+  /** The value of a finished read of `key`, if one is cached; a read in flight or failed gives undefined. */
+  peek<T>(key: string): Promise<T> | undefined {
+    const entry = this.entries.get(key)
+    if (!entry || !entry.settled || entry.expires < Date.now()) return undefined
+    // most recently used last
+    this.entries.delete(key)
+    this.entries.set(key, entry)
+    return entry.value as Promise<T>
+  }
+
   /** Stores a value read some other way (a series). */
   put<T>(key: string, value: T, latest: boolean): void {
     if (this.maxEntries <= 0) return

@@ -132,6 +132,38 @@ describe.skipIf(!reachable)("on a query node", () => {
     expect(series[1]).toMatchObject({ ok: true })
   })
 
+  it("reads each NFD at its own rounds, as single reads do", async () => {
+    const pairs = [
+      { appId: KING, round: 40_000_000n },
+      { appId: 864806088n, round: 30_000_000n },
+      { appId: 2318360299n, round: 60_000_000n },
+      { appId: KING, round: 60_000_000n },
+      { appId: 3296744483n, round: 62_000_000n },
+      { appId: KING, round: 40_000_000n },
+      { appId: 864806088n, round: 1_000n },
+    ]
+    const { algorand, counter } = counted()
+    const fresh = new NfdGhostSDK({ algorand, registryAppId: REG })
+    await fresh.prefetch()
+    counter.requests = 0
+    const records = await fresh.getRecordsAt(pairs, { fields: [] })
+    expect(counter.requests).toBe(1)
+    expect(records).toHaveLength(pairs.length)
+    expect(records[6]).toBeNull()
+    expect(records[0]).toEqual(records[5])
+    const single = new NfdGhostSDK({ algorand: AlgorandClient.fromConfig({ algodConfig }), registryAppId: REG })
+    for (const [i, { appId, round }] of pairs.entries()) {
+      if (i === 6) continue
+      expect(records[i]).toEqual(await single.getRecord(appId, { round, fields: [] }))
+      if (records[i]) expect(records[i]!.round).toBe(round)
+    }
+    // read again: from the cache
+    await fresh.getRecordsAt(pairs.slice(0, 3), { fields: [] })
+    expect(counter.requests).toBe(1)
+    const tip = BigInt((await algorand.client.algod.status().do()).lastRound)
+    await expect(fresh.getRecordsAt([{ appId: KING, round: tip + 1_000n }])).rejects.toThrow(/round/i)
+  })
+
   it("finds segments linked or owned, with Réti's rule", async () => {
     const king = (await sdk.getRecord(KING))!
     const segments = await sdk.getSegmentsFor(king.owner, king.parentAppId!)

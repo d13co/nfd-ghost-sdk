@@ -4,6 +4,7 @@ import { addressLsigAddress, nameLsigAddress, uvarint, lookupLsigProgram } from 
 import { decodeRecord, encodeOpts, parseLogs } from "../src/reader.js"
 import { seriesRounds } from "../src/series.js"
 import { QueryEngine, type CallSpec } from "../src/engine.js"
+import { packPairs } from "../src/sdk.js"
 
 const REG = 760937186n
 
@@ -184,5 +185,58 @@ describe("query engine", () => {
     const [failed] = await new QueryEngine(always, 4, false).run([paged("logs")], undefined)
     expect(failed.outcomes[0].ok).toBe(false)
     expect(alwaysStats.runs).toBe(8) // 128 … 1
+  })
+})
+
+describe("getRecordsAt packing", () => {
+  const limits = { maxCalls: 1024, maxRounds: 64 }
+  const wanted = (entries: [bigint, bigint[]][]) => new Map(entries.map(([id, rounds]) => [id, new Set(rounds)]))
+  const covers = (groups: { appIds: bigint[]; rounds: bigint[] }[], want: Map<bigint, Set<bigint>>) => {
+    for (const [id, rounds] of want)
+      for (const round of rounds)
+        expect(groups.some((g) => g.appIds.includes(id) && g.rounds.includes(round))).toBe(true)
+  }
+
+  it("packs NFDs at different rounds into one query while their rounds fit", () => {
+    const want = wanted([
+      [1n, [10n, 20n]],
+      [2n, [15n]],
+      [3n, [20n, 30n]],
+    ])
+    const groups = packPairs(want, limits)
+    expect(groups).toEqual([{ appIds: [1n, 2n, 3n], rounds: [10n, 15n, 20n, 30n] }])
+  })
+
+  it("keeps each query within the round and call limits", () => {
+    const want = new Map<bigint, Set<bigint>>()
+    for (let i = 0n; i < 200n; i++) want.set(i, new Set([i * 7n, i * 7n + 1n, i * 7n + 100_000n]))
+    want.set(999n, new Set(Array.from({ length: 150 }, (_, i) => BigInt(i))))
+    const small = { maxCalls: 16, maxRounds: 64 }
+    const groups = packPairs(want, small)
+    for (const g of groups) {
+      expect(g.rounds.length).toBeLessThanOrEqual(64)
+      expect(g.appIds.length).toBeLessThanOrEqual(16)
+      expect(new Set(g.appIds).size).toBe(g.appIds.length)
+    }
+    covers(groups, want)
+    // 750 pairs: at least 12 queries by rounds, and not many more
+    expect(groups.length).toBeLessThan(60)
+  })
+
+  it("reads at most 16 times per pair asked for", () => {
+    const want = new Map<bigint, Set<bigint>>([[0n, new Set(Array.from({ length: 64 }, (_, i) => BigInt(i)))]])
+    for (let i = 1n; i < 1024n; i++) want.set(i, new Set([i % 64n]))
+    for (let i = 2000n; i < 3000n; i++) want.set(i, new Set([i * 1000n]))
+    const groups = packPairs(want, limits)
+    covers(groups, want)
+    for (const g of groups) {
+      const pairs = g.appIds.reduce((n, id) => n + g.rounds.filter((r) => want.get(id)!.has(r)).length, 0)
+      expect(g.appIds.length * g.rounds.length).toBeLessThanOrEqual(16 * pairs)
+    }
+  })
+
+  it("puts NFDs at the same round together", () => {
+    const want = new Map(Array.from({ length: 1000 }, (_, i) => [BigInt(i), new Set([5n])]))
+    expect(packPairs(want, limits)).toHaveLength(1)
   })
 })
