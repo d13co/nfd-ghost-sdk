@@ -1,0 +1,2714 @@
+#pragma version 13
+#pragma typetrack false
+#pragma autosalt false
+
+// @algorandfoundation/algorand-typescript/arc4/index.d.ts::Contract.approvalProgram() -> uint64:
+main:
+    intcblock 0 1 8 32 768 4096
+    bytecblock "" 0x000000000000000000000d000f00000000 "i.name"
+    intc_0 // 0
+    dupn 13
+    bytec_0 // ""
+    dupn 10
+    // smart_contracts/nfd_query_reader/contract.algo.ts:113-114
+    // @contract({ avmVersion: 13 })
+    // export class NfdQueryReader extends Contract {
+    txn OnCompletion
+    !
+    assert
+    pushbytess 0xae536f26 0x70cdc12b 0x6721b6c3 0x041eeda6 // method "getRecord(uint64,uint64,uint64)void", method "resolveName(uint64,byte[],uint64)void", method "reverseLookup(uint64,address,address,uint64,uint64,uint64,uint64)void", method "ownedBy(uint64,address,byte[],byte[],uint64,uint64,uint64,uint64)void"
+    txna ApplicationArgs 0
+    match main_getRecord_route@2 main_resolveName_route@3 main_reverseLookup_route@4 main_ownedBy_route@5
+    err
+
+main_ownedBy_route@5:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:215
+    // @abimethod({ readonly: true, onCreate: "allow" })
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    bury 3
+    txna ApplicationArgs 2
+    dup
+    bury 26
+    len
+    intc_3 // 32
+    ==
+    assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>
+    txna ApplicationArgs 3
+    dup
+    intc_0 // 0
+    extract_uint16 // on error: invalid array length header
+    pushint 2
+    +
+    dig 1
+    len
+    ==
+    assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>
+    extract 2 0
+    dup
+    bury 20
+    txna ApplicationArgs 4
+    dup
+    intc_0 // 0
+    extract_uint16 // on error: invalid array length header
+    pushint 2
+    +
+    dig 1
+    len
+    ==
+    assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>
+    extract 2 0
+    dup
+    bury 20
+    txna ApplicationArgs 5
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    bury 6
+    txna ApplicationArgs 6
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    dup
+    bury 5
+    txna ApplicationArgs 7
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    txna ApplicationArgs 8
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    bury 9
+    // smart_contracts/nfd_query_reader/contract.algo.ts:226
+    // const appCount: uint64 = apps.length / 8
+    uncover 3
+    len
+    intc_2 // 8
+    /
+    dup
+    cover 4
+    // smart_contracts/nfd_query_reader/contract.algo.ts:227
+    // const total: uint64 = appCount + asas.length / 8
+    uncover 3
+    len
+    intc_2 // 8
+    /
+    +
+    dup
+    bury 5
+    // smart_contracts/nfd_query_reader/contract.algo.ts:228
+    // let logged: uint64 = 0
+    intc_0 // 0
+    cover 3
+    // smart_contracts/nfd_query_reader/contract.algo.ts:229
+    // const end: uint64 = start + limit < total ? start + limit : total
+    cover 2
+    +
+    dup
+    uncover 2
+    <
+    bz main_ternary_false@12
+    bury 10
+
+main_ternary_merge@13:
+    dig 3
+
+main_while_top@14:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:230
+    // for (let i: uint64 = start; i < end; i++) {
+    dup
+    dig 11
+    <
+    bz main_after_while@41
+    // smart_contracts/nfd_query_reader/contract.algo.ts:232
+    // i < appCount ? op.extractUint64(apps, i * 8) : this.appForAsset(registry, op.extractUint64(asas, (i - appCount) * 8))
+    dup
+    dig 3
+    <
+    bz main_ternary_false@17
+    dup
+    intc_2 // 8
+    *
+    dig 22
+    swap
+    extract_uint64
+    bury 12
+
+main_ternary_merge@18:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:233
+    // if (app === 0) continue
+    dig 11
+    bz main_block@40
+    // smart_contracts/nfd_query_reader/contract.algo.ts:235
+    // const core = this.readCore(app)
+    dig 11
+    callsub readCore
+    dup
+    bury 21
+    // smart_contracts/nfd_query_reader/contract.algo.ts:236
+    // if (!core.exists) continue
+    intc_0 // 0
+    getbit
+    bz main_block@40
+    // smart_contracts/nfd_query_reader/contract.algo.ts:238
+    // if (parent === 0) {
+    dig 6
+    bnz main_else_body@27
+    // smart_contracts/nfd_query_reader/contract.algo.ts:239
+    // if (core.owner !== address || core.owner === core.appAddress) continue
+    dig 19
+    extract 5 32
+    dup
+    bury 26
+    dig 28
+    !=
+    bnz main_block@40
+    dig 19
+    extract 37 32
+    dig 25
+    ==
+    bnz main_block@40
+    // smart_contracts/nfd_query_reader/contract.algo.ts:240
+    // scan = this.scanFor(app, core, Global.zeroAddress, opts)
+    global ZeroAddress
+    swap
+    // smart_contracts/nfd_query_reader/contract.algo.ts:367
+    // if ((opts & F_CAALGO) === 0) return emptyScan()
+    dig 8
+    intc_1 // 1
+    &
+    bnz main_after_if_else@135
+
+main_if_body@134:
+    bury 1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:515
+    // return { found: false, found0: false, count: 0, all: Bytes``, first: Bytes`` }
+    bytec_1 // 0x000000000000000000000d000f00000000
+    bury 16
+
+main_after_if_else@37:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:251
+    // const size = this.logRecordWithin(app, core, opts, scan, logged)
+    dig 11
+    dig 20
+    dig 9
+    dig 18
+    dig 5
+    callsub logRecordWithin
+    popn 2
+    dup
+    cover 2
+    // smart_contracts/nfd_query_reader/contract.algo.ts:252
+    // if (size === 0) {
+    bnz main_after_if_else@39
+    bury 1
+    bury 1
+    bury 1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:253
+    // logMore(i, total)
+    dig 1
+    callsub logMore
+
+main_after_inlined_smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.getRecord@101:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:119
+    // @abimethod({ readonly: true, onCreate: "allow" })
+    intc_1 // 1
+    return
+
+main_after_if_else@39:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:256
+    // logged += size
+    cover 2
+    +
+    swap
+
+main_block@40:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:230
+    // for (let i: uint64 = start; i < end; i++) {
+    intc_1 // 1
+    +
+    b main_while_top@14
+
+main_after_if_else@135:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:368
+    // return this.scanCaAlgo(app, core.v1, target, opts)
+    dig 20
+    intc_1 // 1
+    getbit
+    dig 13
+    swap
+    uncover 3
+    dig 10
+    callsub scanCaAlgo
+    bury 16
+    // smart_contracts/nfd_query_reader/contract.algo.ts:240
+    // scan = this.scanFor(app, core, Global.zeroAddress, opts)
+    b main_after_if_else@37
+
+main_else_body@27:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:242
+    // if (core.parentAppId !== parent) continue
+    dig 19
+    pushint 77
+    extract_uint64
+    dig 7
+    !=
+    bnz main_block@40
+    // smart_contracts/nfd_query_reader/contract.algo.ts:243
+    // if (core.owner === address) {
+    dig 19
+    extract 5 32
+    dig 28
+    ==
+    bz main_else_body@31
+    // smart_contracts/nfd_query_reader/contract.algo.ts:244
+    // scan = this.scanFor(app, core, Global.zeroAddress, opts)
+    global ZeroAddress
+    swap
+    // smart_contracts/nfd_query_reader/contract.algo.ts:367
+    // if ((opts & F_CAALGO) === 0) return emptyScan()
+    dig 8
+    intc_1 // 1
+    &
+    bnz main_after_if_else@135
+    b main_if_body@134
+
+main_else_body@31:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:246
+    // if (core.v1) continue
+    dig 19
+    intc_1 // 1
+    getbit
+    dup
+    bury 14
+    bnz main_block@40
+    // smart_contracts/nfd_query_reader/contract.algo.ts:247
+    // scan = this.scanCaAlgo(app, core.v1, address, opts)
+    dig 11
+    dig 13
+    dig 29
+    dig 10
+    callsub scanCaAlgo
+    dup
+    bury 17
+    // smart_contracts/nfd_query_reader/contract.algo.ts:248
+    // if (!scan.found0) continue
+    intc_1 // 1
+    getbit
+    bz main_block@40
+    b main_after_if_else@37
+
+main_ternary_false@17:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:232
+    // i < appCount ? op.extractUint64(apps, i * 8) : this.appForAsset(registry, op.extractUint64(asas, (i - appCount) * 8))
+    dup
+    dig 3
+    -
+    intc_2 // 8
+    *
+    dig 21
+    swap
+    extract_uint64
+    dup
+    cover 2
+    // smart_contracts/nfd_query_reader/contract.algo.ts:335
+    // const [unitName, exists] = op.AssetParams.assetUnitName(asa)
+    asset_params_get AssetUnitName
+    swap
+    bury 17
+    // smart_contracts/nfd_query_reader/contract.algo.ts:336
+    // if (!exists || unitName !== Bytes`NFD`) return 0
+    bz main_if_body@104
+    dig 15
+    pushbytes "NFD"
+    !=
+    bz main_after_if_else@105
+
+main_if_body@104:
+    bury 1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:336
+    // if (!exists || unitName !== Bytes`NFD`) return 0
+    intc_0 // 0
+
+main_after_inlined_smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.appForAsset@121:
+    bury 12
+    b main_ternary_merge@18
+
+main_after_if_else@105:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:337
+    // const [name] = op.AssetParams.assetName(asa)
+    dig 1
+    dup
+    asset_params_get AssetName
+    pop
+    swap
+    // smart_contracts/nfd_query_reader/contract.algo.ts:338
+    // const [creator] = op.AssetParams.assetCreator(asa)
+    asset_params_get AssetCreator
+    pop
+    bury 21
+    // smart_contracts/nfd_query_reader/contract.algo.ts:339
+    // const app = this.appForName(registry, name)
+    dig 7
+    swap
+    callsub appForName
+    dup
+    bury 14
+    // smart_contracts/nfd_query_reader/contract.algo.ts:340
+    // if (app !== 0) {
+    bz main_after_if_else@109
+    // smart_contracts/nfd_query_reader/contract.algo.ts:341
+    // const [appAddress, appExists] = op.AppParams.appAddress(app)
+    dig 12
+    app_params_get AppAddress
+    swap
+    bury 26
+    // smart_contracts/nfd_query_reader/contract.algo.ts:342
+    // if (appExists && appAddress === creator) return app
+    bz main_after_if_else@109
+    dig 24
+    dig 20
+    ==
+    bz main_after_if_else@109
+    bury 1
+    dig 11
+    // smart_contracts/nfd_query_reader/contract.algo.ts:232
+    // i < appCount ? op.extractUint64(apps, i * 8) : this.appForAsset(registry, op.extractUint64(asas, (i - appCount) * 8))
+    b main_after_inlined_smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.appForAsset@121
+
+main_after_if_else@109:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:344
+    // for (let k: uint64 = 1; k <= ASSET_APP_WINDOW && k < asa; k++) {
+    intc_1 // 1
+    bury 11
+
+main_while_top@110:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:344
+    // for (let k: uint64 = 1; k <= ASSET_APP_WINDOW && k < asa; k++) {
+    dig 10
+    intc_2 // 8
+    <=
+    bz main_if_body@104
+    dig 10
+    dig 2
+    <
+    bz main_if_body@104
+    // smart_contracts/nfd_query_reader/contract.algo.ts:345
+    // const candidate: uint64 = asa - k
+    dig 1
+    dig 11
+    -
+    dup
+    cover 3
+    // smart_contracts/nfd_query_reader/contract.algo.ts:346
+    // const [address, candidateExists] = op.AppParams.appAddress(candidate)
+    app_params_get AppAddress
+    swap
+    bury 30
+    // smart_contracts/nfd_query_reader/contract.algo.ts:347
+    // if (!candidateExists || address !== creator) continue
+    bz main_if_body@114
+    dig 28
+    dig 21
+    !=
+    bz main_after_if_else@115
+
+main_if_body@114:
+    uncover 2
+    pop
+    // smart_contracts/nfd_query_reader/contract.algo.ts:344
+    // for (let k: uint64 = 1; k <= ASSET_APP_WINDOW && k < asa; k++) {
+    dig 10
+    intc_1 // 1
+    +
+    bury 11
+    b main_while_top@110
+
+main_after_if_else@115:
+    bury 1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:348
+    // const [appName, hasName] = op.AppGlobal.getExBytes(candidate, Bytes`i.name`)
+    dig 1
+    bytec_2 // "i.name"
+    app_global_get_ex
+    swap
+    bury 25
+    // smart_contracts/nfd_query_reader/contract.algo.ts:349
+    // return hasName && this.appForName(registry, appName) === candidate ? candidate : 0
+    bz main_bool_false@118
+    dig 6
+    dig 24
+    callsub appForName
+    dig 2
+    ==
+    bz main_bool_false@118
+    intc_1 // 1
+
+main_bool_merge@119:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:349
+    // return hasName && this.appForName(registry, appName) === candidate ? candidate : 0
+    intc_0 // 0
+    uncover 3
+    uncover 2
+    select
+    // smart_contracts/nfd_query_reader/contract.algo.ts:232
+    // i < appCount ? op.extractUint64(apps, i * 8) : this.appForAsset(registry, op.extractUint64(asas, (i - appCount) * 8))
+    b main_after_inlined_smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.appForAsset@121
+
+main_bool_false@118:
+    intc_0 // 0
+    b main_bool_merge@119
+
+main_after_while@41:
+    popn 3
+    // smart_contracts/nfd_query_reader/contract.algo.ts:258
+    // if (end < total) logMore(end, total)
+    dig 7
+    dig 1
+    <
+    bz main_after_inlined_smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.getRecord@101
+    dig 7
+    dig 1
+    callsub logMore
+    b main_after_inlined_smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.getRecord@101
+
+main_ternary_false@12:
+    pop
+    dig 2
+    bury 10
+    b main_ternary_merge@13
+
+main_reverseLookup_route@4:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:146
+    // @abimethod({ readonly: true, onCreate: "allow" })
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    dup
+    bury 4
+    txna ApplicationArgs 2
+    dup
+    bury 27
+    len
+    intc_3 // 32
+    ==
+    assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>
+    txna ApplicationArgs 3
+    dup
+    bury 25
+    len
+    intc_3 // 32
+    ==
+    assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>
+    txna ApplicationArgs 4
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    bury 5
+    txna ApplicationArgs 5
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    bury 3
+    txna ApplicationArgs 6
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    bury 7
+    txna ApplicationArgs 7
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    bury 6
+    // smart_contracts/nfd_query_reader/contract.algo.ts:156
+    // const [, registryExists] = op.AppParams.appCreator(registry)
+    app_params_get AppCreator
+    bury 1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:157
+    // if (!registryExists) return
+    bz main_after_inlined_smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.getRecord@101
+    // smart_contracts/nfd_query_reader/contract.algo.ts:159
+    // const boxKey = op.sha256(Bytes`addr/algo/`.concat(address.bytes))
+    pushbytes "addr/algo/"
+    dig 25
+    concat
+    sha256
+    dup
+    // smart_contracts/nfd_query_reader/contract.algo.ts:160
+    // const [boxLength, boxExists] = op.AppBox.length(registry, boxKey)
+    dig 4
+    swap
+    app_box_len
+    // smart_contracts/nfd_query_reader/contract.algo.ts:161
+    // const inBox: uint64 = boxExists ? boxLength / 8 : 0
+    bz main_ternary_false@48
+    intc_2 // 8
+    /
+
+main_ternary_merge@49:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:163
+    // let lsigIds = Bytes``
+    bytec_0 // ""
+    // smart_contracts/nfd_query_reader/contract.algo.ts:164
+    // if (op.appOptedIn(addressLsig, registry)) {
+    dig 25
+    dig 6
+    app_opted_in
+    bz main_after_if_else@56
+    // smart_contracts/nfd_query_reader/contract.algo.ts:165
+    // for (let k: uint64 = 0; k < LSIG_APP_KEYS; k++) {
+    intc_0 // 0
+    bury 10
+
+main_while_top@51:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:165
+    // for (let k: uint64 = 0; k < LSIG_APP_KEYS; k++) {
+    dig 9
+    pushint 16
+    <
+    bz main_after_if_else@56
+    // smart_contracts/nfd_query_reader/contract.algo.ts:166
+    // const [ids, exists] = op.AppLocal.getExBytes(addressLsig, registry, Bytes`i.apps`.concat(decimal(k)))
+    dig 9
+    callsub decimal
+    pushbytes "i.apps"
+    swap
+    concat
+    dig 26
+    dig 7
+    uncover 2
+    app_local_get_ex
+    swap
+    bury 19
+    // smart_contracts/nfd_query_reader/contract.algo.ts:167
+    // if (exists) lsigIds = lsigIds.concat(ids)
+    bz main_after_if_else@54
+    dig 17
+    concat
+
+main_after_if_else@54:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:165
+    // for (let k: uint64 = 0; k < LSIG_APP_KEYS; k++) {
+    dig 9
+    intc_1 // 1
+    +
+    bury 10
+    b main_while_top@51
+
+main_after_if_else@56:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:170
+    // const total: uint64 = inBox + lsigIds.length / 8
+    dup
+    len
+    intc_2 // 8
+    /
+    dig 2
+    +
+    dup
+    bury 5
+    // smart_contracts/nfd_query_reader/contract.algo.ts:172
+    // let logged: uint64 = 0
+    intc_0 // 0
+    cover 3
+    // smart_contracts/nfd_query_reader/contract.algo.ts:173
+    // const end: uint64 = start + limit < total ? start + limit : total
+    dig 6
+    dig 11
+    +
+    dup
+    uncover 2
+    <
+    bz main_ternary_false@58
+    bury 12
+
+main_ternary_merge@59:
+    dig 5
+
+main_while_top@60:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:174
+    // for (let i: uint64 = start; i < end; i++) {
+    dup
+    dig 13
+    <
+    bz main_after_while@88
+    // smart_contracts/nfd_query_reader/contract.algo.ts:176
+    // if (i < inBox) {
+    dup
+    dig 3
+    <
+    bz main_else_body@63
+    // smart_contracts/nfd_query_reader/contract.algo.ts:177
+    // app = op.btoi(op.AppBox.extract(registry, boxKey, i * 8, 8))
+    dup
+    intc_2 // 8
+    *
+    dig 8
+    dig 6
+    uncover 2
+    intc_2 // 8
+    app_box_extract
+    btoi
+    bury 14
+
+main_after_if_else@67:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:182
+    // if (app === 0) continue
+    dig 13
+    bz main_block@87
+    // smart_contracts/nfd_query_reader/contract.algo.ts:184
+    // const core = this.readCore(app)
+    dig 13
+    callsub readCore
+    dup
+    bury 23
+    // smart_contracts/nfd_query_reader/contract.algo.ts:185
+    // if (!core.exists) continue
+    intc_0 // 0
+    getbit
+    bz main_block@87
+    // smart_contracts/nfd_query_reader/contract.algo.ts:187
+    // if (parent === 0) {
+    dig 8
+    bnz main_else_body@77
+    // smart_contracts/nfd_query_reader/contract.algo.ts:188
+    // if (!propertiesApply(core)) continue
+    dig 21
+    callsub propertiesApply
+    bury 23
+    bz main_block@87
+    // smart_contracts/nfd_query_reader/contract.algo.ts:189
+    // scan = this.scanCaAlgo(app, core.v1, address, opts)
+    dig 21
+    intc_1 // 1
+    getbit
+    dig 14
+    swap
+    dig 31
+    dig 12
+    callsub scanCaAlgo
+    dup
+    bury 19
+    // smart_contracts/nfd_query_reader/contract.algo.ts:190
+    // if (!scan.found) continue
+    intc_0 // 0
+    getbit
+    bnz main_after_if_else@84
+
+main_block@87:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:174
+    // for (let i: uint64 = start; i < end; i++) {
+    intc_1 // 1
+    +
+    b main_while_top@60
+
+main_after_if_else@84:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:197
+    // const size = this.logRecordWithin(app, core, opts, scan, logged)
+    dig 13
+    dig 22
+    dig 11
+    dig 20
+    dig 7
+    callsub logRecordWithin
+    popn 2
+    dup
+    cover 3
+    // smart_contracts/nfd_query_reader/contract.algo.ts:198
+    // if (size === 0) {
+    bnz main_after_if_else@86
+    bury 1
+    bury 1
+    bury 1
+    bury 1
+    bury 1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:199
+    // logMore(i, total)
+    dig 1
+    callsub logMore
+    // smart_contracts/nfd_query_reader/contract.algo.ts:146
+    // @abimethod({ readonly: true, onCreate: "allow" })
+    b main_after_inlined_smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.getRecord@101
+
+main_after_if_else@86:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:202
+    // logged += size
+    uncover 4
+    uncover 3
+    +
+    cover 3
+    b main_block@87
+
+main_else_body@77:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:192
+    // if (core.parentAppId !== parent) continue
+    dig 21
+    pushint 77
+    extract_uint64
+    dig 9
+    !=
+    bnz main_block@87
+    // smart_contracts/nfd_query_reader/contract.algo.ts:193
+    // scan = this.scanCaAlgo(app, core.v1, address, opts)
+    dig 21
+    dup
+    intc_1 // 1
+    getbit
+    dup
+    bury 18
+    dig 15
+    swap
+    dig 32
+    dup
+    cover 3
+    dig 14
+    callsub scanCaAlgo
+    bury 20
+    // smart_contracts/nfd_query_reader/contract.algo.ts:195
+    // if (!(core.owner === address || (!core.v1 && scan.found0))) continue
+    swap
+    extract 5 32
+    ==
+    bnz main_after_if_else@84
+    dig 15
+    bnz main_block@87
+    dig 17
+    intc_1 // 1
+    getbit
+    bz main_block@87
+    b main_after_if_else@84
+
+main_else_body@63:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:179
+    // app = op.extractUint64(lsigIds, (i - inBox) * 8)
+    dup
+    dig 3
+    -
+    intc_2 // 8
+    *
+    dig 2
+    swap
+    extract_uint64
+    dup
+    bury 15
+    // smart_contracts/nfd_query_reader/contract.algo.ts:180
+    // if (app !== 0 && this.boxHas(registry, boxKey, inBox, app)) app = 0
+    bz main_after_if_else@67
+    // smart_contracts/nfd_query_reader/contract.algo.ts:356
+    // for (let i: uint64 = 0; i < count; i++) {
+    intc_0 // 0
+
+main_while_top@123:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:356
+    // for (let i: uint64 = 0; i < count; i++) {
+    dup
+    dig 4
+    <
+    bz main_after_while@127
+    // smart_contracts/nfd_query_reader/contract.algo.ts:357
+    // if (op.btoi(op.AppBox.extract(registry, boxKey, i * 8, 8)) === app) return true
+    dup
+    intc_2 // 8
+    *
+    dig 9
+    dig 7
+    uncover 2
+    intc_2 // 8
+    app_box_extract
+    btoi
+    dig 15
+    ==
+    bz main_after_if_else@126
+    pop
+    intc_1 // 1
+
+main_after_inlined_smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.boxHas@128:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:180
+    // if (app !== 0 && this.boxHas(registry, boxKey, inBox, app)) app = 0
+    bz main_after_if_else@67
+    intc_0 // 0
+    bury 14
+    b main_after_if_else@67
+
+main_after_if_else@126:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:356
+    // for (let i: uint64 = 0; i < count; i++) {
+    intc_1 // 1
+    +
+    b main_while_top@123
+
+main_after_while@127:
+    pop
+    // smart_contracts/nfd_query_reader/contract.algo.ts:359
+    // return false
+    intc_0 // 0
+    // smart_contracts/nfd_query_reader/contract.algo.ts:180
+    // if (app !== 0 && this.boxHas(registry, boxKey, inBox, app)) app = 0
+    b main_after_inlined_smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.boxHas@128
+
+main_after_while@88:
+    popn 5
+    // smart_contracts/nfd_query_reader/contract.algo.ts:204
+    // if (end < total) logMore(end, total)
+    dig 7
+    dig 1
+    <
+    bz main_after_inlined_smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.getRecord@101
+    dig 7
+    dig 1
+    callsub logMore
+    b main_after_inlined_smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.getRecord@101
+
+main_ternary_false@58:
+    pop
+    dig 4
+    bury 12
+    b main_ternary_merge@59
+
+main_ternary_false@48:
+    pop
+    // smart_contracts/nfd_query_reader/contract.algo.ts:161
+    // const inBox: uint64 = boxExists ? boxLength / 8 : 0
+    intc_0 // 0
+    b main_ternary_merge@49
+
+main_resolveName_route@3:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:128
+    // @abimethod({ readonly: true, onCreate: "allow" })
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    txna ApplicationArgs 2
+    dup
+    intc_0 // 0
+    extract_uint16 // on error: invalid array length header
+    pushint 2
+    +
+    dig 1
+    len
+    ==
+    assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>
+    extract 2 0
+    dup
+    bury 16
+    txna ApplicationArgs 3
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    bury 7
+    // smart_contracts/nfd_query_reader/contract.algo.ts:130
+    // const app = this.appForName(registry, name)
+    callsub appForName
+    dup
+    bury 10
+    // smart_contracts/nfd_query_reader/contract.algo.ts:131
+    // if (app === 0) return
+    bz main_after_inlined_smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.getRecord@101
+    // smart_contracts/nfd_query_reader/contract.algo.ts:132
+    // const core = this.readCore(app)
+    dig 8
+    callsub readCore
+    dup
+    bury 18
+    // smart_contracts/nfd_query_reader/contract.algo.ts:133
+    // if (!core.exists || core.name !== name) return
+    intc_0 // 0
+    getbit
+    bz main_after_inlined_smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.getRecord@101
+    dig 16
+    dup
+    intc_1 // 1
+    extract_uint16
+    dig 1
+    pushint 3
+    extract_uint16
+    substring3
+    extract 2 0
+    dig 14
+    !=
+    bnz main_after_inlined_smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.getRecord@101
+    // smart_contracts/nfd_query_reader/contract.algo.ts:134
+    // this.logRecord(app, core, opts, this.scanFor(app, core, Global.zeroAddress, opts))
+    global ZeroAddress
+    // smart_contracts/nfd_query_reader/contract.algo.ts:367
+    // if ((opts & F_CAALGO) === 0) return emptyScan()
+    dig 5
+    intc_1 // 1
+    &
+    bnz main_after_if_else@139
+    pop
+    // smart_contracts/nfd_query_reader/contract.algo.ts:515
+    // return { found: false, found0: false, count: 0, all: Bytes``, first: Bytes`` }
+    bytec_1 // 0x000000000000000000000d000f00000000
+    bury 13
+
+main_after_inlined_smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.scanFor@140:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:479
+    // log(this.encodeRecord(app, core, opts, scan))
+    dig 8
+    dig 17
+    dig 6
+    dig 15
+    callsub encodeRecord
+    popn 2
+    log
+    // smart_contracts/nfd_query_reader/contract.algo.ts:128
+    // @abimethod({ readonly: true, onCreate: "allow" })
+    b main_after_inlined_smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.getRecord@101
+
+main_after_if_else@139:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:368
+    // return this.scanCaAlgo(app, core.v1, target, opts)
+    dig 17
+    intc_1 // 1
+    getbit
+    dig 10
+    swap
+    uncover 2
+    dig 7
+    callsub scanCaAlgo
+    bury 13
+    // smart_contracts/nfd_query_reader/contract.algo.ts:134
+    // this.logRecord(app, core, opts, this.scanFor(app, core, Global.zeroAddress, opts))
+    b main_after_inlined_smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.scanFor@140
+
+main_getRecord_route@2:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:119
+    // @abimethod({ readonly: true, onCreate: "allow" })
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    bury 3
+    txna ApplicationArgs 2
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    dup
+    bury 10
+    txna ApplicationArgs 3
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    bury 6
+    // smart_contracts/nfd_query_reader/contract.algo.ts:121
+    // const core = this.readCore(app)
+    callsub readCore
+    dup
+    bury 18
+    // smart_contracts/nfd_query_reader/contract.algo.ts:122
+    // if (!core.exists) return
+    intc_0 // 0
+    getbit
+    bz main_after_inlined_smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.getRecord@101
+    // smart_contracts/nfd_query_reader/contract.algo.ts:123
+    // if (this.appForName(registry, core.name) !== app) return
+    dig 16
+    dup
+    intc_1 // 1
+    extract_uint16
+    dig 1
+    pushint 3
+    extract_uint16
+    substring3
+    extract 2 0
+    dig 3
+    swap
+    callsub appForName
+    dig 9
+    !=
+    bnz main_after_inlined_smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.getRecord@101
+    // smart_contracts/nfd_query_reader/contract.algo.ts:124
+    // this.logRecord(app, core, opts, this.scanFor(app, core, Global.zeroAddress, opts))
+    global ZeroAddress
+    // smart_contracts/nfd_query_reader/contract.algo.ts:367
+    // if ((opts & F_CAALGO) === 0) return emptyScan()
+    dig 5
+    intc_1 // 1
+    &
+    bnz main_after_if_else@143
+    pop
+    // smart_contracts/nfd_query_reader/contract.algo.ts:515
+    // return { found: false, found0: false, count: 0, all: Bytes``, first: Bytes`` }
+    bytec_1 // 0x000000000000000000000d000f00000000
+    bury 13
+
+main_after_inlined_smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.scanFor@144:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:479
+    // log(this.encodeRecord(app, core, opts, scan))
+    dig 8
+    dig 17
+    dig 6
+    dig 15
+    callsub encodeRecord
+    popn 2
+    log
+    // smart_contracts/nfd_query_reader/contract.algo.ts:119
+    // @abimethod({ readonly: true, onCreate: "allow" })
+    b main_after_inlined_smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.getRecord@101
+
+main_after_if_else@143:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:368
+    // return this.scanCaAlgo(app, core.v1, target, opts)
+    dig 17
+    intc_1 // 1
+    getbit
+    dig 10
+    swap
+    uncover 2
+    dig 7
+    callsub scanCaAlgo
+    bury 13
+    // smart_contracts/nfd_query_reader/contract.algo.ts:124
+    // this.logRecord(app, core, opts, this.scanFor(app, core, Global.zeroAddress, opts))
+    b main_after_inlined_smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.scanFor@144
+
+
+// smart_contracts/nfd_query_reader/contract.algo.ts::propertiesApply(core: bytes) -> uint64, bytes:
+propertiesApply:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:519
+    // function propertiesApply(core: Core): boolean {
+    proto 1 2
+    // smart_contracts/nfd_query_reader/contract.algo.ts:520
+    // return core.state !== STATE_EXPIRED && core.state !== STATE_FOR_SALE
+    frame_dig -1
+    pushint 103
+    extract_uint64
+    dup
+    pushint 2
+    !=
+    bz propertiesApply_bool_false@3
+    frame_dig 0
+    intc_1 // 1
+    !=
+    bz propertiesApply_bool_false@3
+    intc_1 // 1
+
+propertiesApply_bool_merge@4:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:520
+    // return core.state !== STATE_EXPIRED && core.state !== STATE_FOR_SALE
+    frame_dig -1
+    uncover 2
+    retsub
+
+propertiesApply_bool_false@3:
+    intc_0 // 0
+    b propertiesApply_bool_merge@4
+
+
+// smart_contracts/nfd_query_reader/contract.algo.ts::cut(value: bytes, max: uint64) -> bytes:
+cut:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:532
+    // function cut(value: bytes, max: uint64): bytes {
+    proto 2 1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:533
+    // return value.length > max ? value.slice(0, max) : value
+    frame_dig -2
+    len
+    dup
+    frame_dig -1
+    >
+    bz cut_ternary_false@2
+    intc_0 // 0
+    dig 1
+    >=
+    intc_0 // 0
+    dig 2
+    uncover 2
+    select
+    frame_dig -1
+    dig 2
+    >=
+    frame_dig -1
+    uncover 3
+    uncover 2
+    select
+    frame_dig -2
+    cover 2
+    substring3
+    retsub
+
+cut_ternary_false@2:
+    pop
+    frame_dig -2
+    // smart_contracts/nfd_query_reader/contract.algo.ts:533
+    // return value.length > max ? value.slice(0, max) : value
+    retsub
+
+
+// smart_contracts/nfd_query_reader/contract.algo.ts::logMore(next: uint64, total: uint64) -> void:
+logMore:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:536
+    // function logMore(next: uint64, total: uint64): void {
+    proto 2 0
+    // smart_contracts/nfd_query_reader/contract.algo.ts:537
+    // log(Bytes.fromHex("02").concat(op.itob(next)).concat(op.itob(total)))
+    frame_dig -2
+    itob
+    pushbytes 0x02
+    swap
+    concat
+    frame_dig -1
+    itob
+    concat
+    log
+    retsub
+
+
+// smart_contracts/nfd_query_reader/contract.algo.ts::decimal(n: uint64) -> bytes:
+decimal:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:541
+    // function decimal(n: uint64): bytes {
+    proto 1 1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:542
+    // if (n < 10) return digit(n)
+    frame_dig -1
+    pushint 10
+    <
+    bz decimal_after_if_else@2
+    // smart_contracts/nfd_query_reader/contract.algo.ts:552
+    // return op.extract(op.itob(n + 48), 7, 1)
+    frame_dig -1
+    pushint 48
+    +
+    itob
+    extract 7 1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:542
+    // if (n < 10) return digit(n)
+    retsub
+
+decimal_after_if_else@2:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:543
+    // return digit(n / 10).concat(digit(n % 10))
+    frame_dig -1
+    pushint 10
+    /
+    // smart_contracts/nfd_query_reader/contract.algo.ts:552
+    // return op.extract(op.itob(n + 48), 7, 1)
+    pushint 48
+    +
+    itob
+    extract 7 1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:543
+    // return digit(n / 10).concat(digit(n % 10))
+    frame_dig -1
+    pushint 10
+    %
+    dup
+    frame_bury -1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:552
+    // return op.extract(op.itob(n + 48), 7, 1)
+    pushint 48
+    +
+    itob
+    extract 7 1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:543
+    // return digit(n / 10).concat(digit(n % 10))
+    concat
+    retsub
+
+
+// smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.readCore(app: uint64) -> bytes:
+readCore:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:264
+    // private readCore(app: uint64): Core {
+    proto 1 1
+    intc_0 // 0
+    bytec_0 // ""
+    dup
+    // smart_contracts/nfd_query_reader/contract.algo.ts:265
+    // const [, appExists] = op.AppParams.appCreator(app)
+    frame_dig -1
+    app_params_get AppCreator
+    bury 1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:266
+    // if (!appExists) return emptyCore()
+    bnz readCore_after_if_else@2
+
+readCore_if_body@1:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:498-511
+    // return {
+    //   exists: false,
+    //   v1: false,
+    //   name: Bytes``,
+    //   version: Bytes``,
+    //   owner: Global.zeroAddress,
+    //   appAddress: Global.zeroAddress,
+    //   asaId: 0,
+    //   parentAppId: 0,
+    //   category: Bytes``,
+    //   sellAmount: 0,
+    //   expirationTime: 0,
+    //   state: STATE_OWNED,
+    // }
+    pushbytes base32(AAAG6ADRAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABZQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA)
+    // smart_contracts/nfd_query_reader/contract.algo.ts:266
+    // if (!appExists) return emptyCore()
+    frame_bury 0
+    retsub
+
+readCore_after_if_else@2:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:267
+    // const [name, hasName] = op.AppGlobal.getExBytes(app, Bytes`i.name`)
+    frame_dig -1
+    bytec_2 // "i.name"
+    app_global_get_ex
+    swap
+    frame_bury 0
+    // smart_contracts/nfd_query_reader/contract.algo.ts:268
+    // if (!hasName) return emptyCore()
+    bz readCore_if_body@1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:270
+    // const [version, hasVersion] = op.AppGlobal.getExBytes(app, Bytes`i.ver`)
+    frame_dig -1
+    pushbytes "i.ver"
+    app_global_get_ex
+    // smart_contracts/nfd_query_reader/contract.algo.ts:271
+    // const v1 = !hasVersion || version.length === 0 || version.slice(0, 1) === Bytes`1`
+    bz readCore_bool_true@7
+    dup
+    len
+    dup
+    frame_bury 2
+    bz readCore_bool_true@7
+    intc_0 // 0
+    frame_dig 2
+    dup
+    cover 2
+    >=
+    intc_0 // 0
+    dig 2
+    uncover 2
+    select
+    intc_1 // 1
+    dig 2
+    >=
+    intc_1 // 1
+    uncover 3
+    uncover 2
+    select
+    dig 2
+    cover 2
+    substring3
+    pushbytes "1"
+    ==
+    bz readCore_bool_false@8
+
+readCore_bool_true@7:
+    intc_1 // 1
+
+readCore_bool_merge@9:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:272
+    // const [ownerBytes, hasOwner] = op.AppGlobal.getExBytes(app, Bytes`i.owner.a`)
+    frame_dig -1
+    pushbytes "i.owner.a"
+    app_global_get_ex
+    // smart_contracts/nfd_query_reader/contract.algo.ts:273
+    // const owner = hasOwner && ownerBytes.length === 32 ? Account(ownerBytes) : Global.zeroAddress
+    bz readCore_ternary_false@12
+    dup
+    len
+    intc_3 // 32
+    ==
+    bz readCore_ternary_false@12
+    swap
+
+readCore_ternary_merge@13:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:274
+    // const [appAddress] = op.AppParams.appAddress(app)
+    frame_dig -1
+    app_params_get AppAddress
+    pop
+    cover 3
+    // smart_contracts/nfd_query_reader/contract.algo.ts:275
+    // const [category] = op.AppGlobal.getExBytes(app, Bytes`i.category`)
+    frame_dig -1
+    pushbytes "i.category"
+    app_global_get_ex
+    pop
+    cover 4
+    // smart_contracts/nfd_query_reader/contract.algo.ts:277
+    // const sellAmount = this.globalUint(app, Bytes`i.sellamt`)
+    frame_dig -1
+    pushbytes "i.sellamt"
+    callsub globalUint
+    cover 3
+    // smart_contracts/nfd_query_reader/contract.algo.ts:278
+    // const expirationTime = this.globalUint(app, Bytes`i.expirationTime`)
+    frame_dig -1
+    pushbytes "i.expirationTime"
+    callsub globalUint
+    dup
+    cover 4
+    // smart_contracts/nfd_query_reader/contract.algo.ts:279
+    // let state = STATE_OWNED
+    intc_0 // 0
+    frame_bury 1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:280
+    // if (expirationTime !== 0 && Global.latestTimestamp >= expirationTime) {
+    bz readCore_else_body@16
+    global LatestTimestamp
+    dig 4
+    >=
+    bz readCore_else_body@16
+    // smart_contracts/nfd_query_reader/contract.algo.ts:281
+    // state = STATE_EXPIRED
+    pushint 2
+    frame_bury 1
+
+readCore_after_if_else@22:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:295
+    // asaId: this.globalUint(app, Bytes`i.asaid`),
+    frame_dig -1
+    pushbytes "i.asaid"
+    callsub globalUint
+    // smart_contracts/nfd_query_reader/contract.algo.ts:296
+    // parentAppId: this.globalUint(app, Bytes`i.parentAppID`),
+    frame_dig -1
+    pushbytes "i.parentAppID"
+    callsub globalUint
+    // smart_contracts/nfd_query_reader/contract.algo.ts:288-301
+    // return {
+    //   exists: true,
+    //   v1,
+    //   name,
+    //   version,
+    //   owner,
+    //   appAddress,
+    //   asaId: this.globalUint(app, Bytes`i.asaid`),
+    //   parentAppId: this.globalUint(app, Bytes`i.parentAppID`),
+    //   category,
+    //   sellAmount,
+    //   expirationTime,
+    //   state,
+    // }
+    pushbytes 0x80
+    intc_1 // 1
+    uncover 4
+    setbit
+    frame_dig 0
+    dup
+    len
+    itob
+    extract 6 2
+    swap
+    concat
+    swap
+    pushbytes 0x006f
+    concat
+    dig 1
+    len
+    pushint 111
+    +
+    uncover 6
+    dup
+    len
+    itob
+    extract 6 2
+    swap
+    concat
+    dig 1
+    itob
+    extract 6 2
+    uncover 3
+    swap
+    concat
+    dig 1
+    len
+    uncover 3
+    +
+    swap
+    uncover 6
+    concat
+    uncover 8
+    concat
+    uncover 5
+    itob
+    concat
+    uncover 4
+    itob
+    concat
+    uncover 6
+    dup
+    len
+    itob
+    extract 6 2
+    swap
+    concat
+    uncover 2
+    itob
+    extract 6 2
+    uncover 2
+    swap
+    concat
+    uncover 5
+    itob
+    concat
+    uncover 4
+    itob
+    concat
+    frame_dig 1
+    itob
+    concat
+    uncover 3
+    concat
+    uncover 2
+    concat
+    swap
+    concat
+    frame_bury 0
+    retsub
+
+readCore_else_body@16:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:282
+    // } else if (sellAmount !== 0) {
+    dig 4
+    bz readCore_else_body@18
+    // smart_contracts/nfd_query_reader/contract.algo.ts:283
+    // state = STATE_FOR_SALE
+    intc_1 // 1
+    frame_bury 1
+    b readCore_after_if_else@22
+
+readCore_else_body@18:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:284
+    // } else if (owner === appAddress) {
+    dig 1
+    dig 6
+    ==
+    bz readCore_after_if_else@22
+    // smart_contracts/nfd_query_reader/contract.algo.ts:285
+    // state = STATE_UNOWNED
+    pushint 3
+    frame_bury 1
+    b readCore_after_if_else@22
+
+readCore_ternary_false@12:
+    pop
+    // smart_contracts/nfd_query_reader/contract.algo.ts:273
+    // const owner = hasOwner && ownerBytes.length === 32 ? Account(ownerBytes) : Global.zeroAddress
+    global ZeroAddress
+    swap
+    b readCore_ternary_merge@13
+
+readCore_bool_false@8:
+    intc_0 // 0
+    b readCore_bool_merge@9
+
+
+// smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.globalUint(app: uint64, key: bytes) -> uint64:
+globalUint:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:305
+    // private globalUint(app: uint64, key: bytes): uint64 {
+    proto 2 1
+    bytec_0 // ""
+    // smart_contracts/nfd_query_reader/contract.algo.ts:306
+    // const [value, exists] = op.AppGlobal.getExBytes(app, key)
+    frame_dig -2
+    frame_dig -1
+    app_global_get_ex
+    // smart_contracts/nfd_query_reader/contract.algo.ts:307
+    // if (!exists || value.length === 0 || value.length > 8) return 0
+    bz globalUint_if_body@3
+    dup
+    len
+    dup
+    frame_bury 0
+    bz globalUint_if_body@3
+    frame_dig 0
+    intc_2 // 8
+    >
+    bz globalUint_after_if_else@4
+
+globalUint_if_body@3:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:307
+    // if (!exists || value.length === 0 || value.length > 8) return 0
+    intc_0 // 0
+    frame_bury 0
+    retsub
+
+globalUint_after_if_else@4:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:308
+    // return op.btoi(value)
+    btoi
+    swap
+    retsub
+
+
+// smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.appForName(registry: uint64, name: bytes) -> uint64:
+appForName:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:315
+    // private appForName(registry: uint64, name: bytes): uint64 {
+    proto 2 1
+    intc_0 // 0
+    dup
+    bytec_0 // ""
+    // smart_contracts/nfd_query_reader/contract.algo.ts:316
+    // const [, registryExists] = op.AppParams.appCreator(registry)
+    frame_dig -2
+    app_params_get AppCreator
+    bury 1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:317
+    // if (!registryExists) return 0
+    bnz appForName_after_if_else@2
+
+appForName_if_body@1:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:317
+    // if (!registryExists) return 0
+    intc_0 // 0
+    frame_bury 0
+    retsub
+
+appForName_after_if_else@2:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:318
+    // const [value, exists] = op.AppBox.get(registry, op.sha256(Bytes`name/`.concat(name)))
+    pushbytes "name/"
+    frame_dig -1
+    concat
+    dup
+    sha256
+    frame_dig -2
+    swap
+    app_box_get
+    // smart_contracts/nfd_query_reader/contract.algo.ts:319
+    // if (exists && value.length === 16) return op.extractUint64(value, 8)
+    bz appForName_after_if_else@5
+    dup
+    len
+    pushint 16
+    ==
+    bz appForName_after_if_else@5
+    intc_2 // 8
+    extract_uint64
+    frame_bury 0
+    retsub
+
+appForName_after_if_else@5:
+    pop
+    // smart_contracts/nfd_query_reader/contract.algo.ts:568
+    // .concat(op.itob(registry))
+    frame_dig -2
+    itob
+    // smart_contracts/nfd_query_reader/contract.algo.ts:567
+    // const program = Bytes.fromHex("052001018008")
+    pushbytes 0x052001018008
+    // smart_contracts/nfd_query_reader/contract.algo.ts:567-568
+    // const program = Bytes.fromHex("052001018008")
+    //   .concat(op.itob(registry))
+    swap
+    concat
+    // smart_contracts/nfd_query_reader/contract.algo.ts:569
+    // .concat(Bytes.fromHex("173500311834001231108106121031192212311981001211104000010022432601"))
+    pushbytes 0x173500311834001231108106121031192212311981001211104000010022432601
+    // smart_contracts/nfd_query_reader/contract.algo.ts:567-569
+    // const program = Bytes.fromHex("052001018008")
+    //   .concat(op.itob(registry))
+    //   .concat(Bytes.fromHex("173500311834001231108106121031192212311981001211104000010022432601"))
+    concat
+    // smart_contracts/nfd_query_reader/contract.algo.ts:570
+    // .concat(uvarint(suffix.length))
+    dig 1
+    len
+    dup
+    // smart_contracts/nfd_query_reader/contract.algo.ts:557
+    // if (n < 128) return op.extract(op.itob(n), 7, 1)
+    pushint 128
+    <
+    bz appForName_after_if_else@14
+    itob
+    extract 7 1
+
+appForName_after_inlined_smart_contracts/nfd_query_reader/contract.algo.ts::uvarint@15:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:567-570
+    // const program = Bytes.fromHex("052001018008")
+    //   .concat(op.itob(registry))
+    //   .concat(Bytes.fromHex("173500311834001231108106121031192212311981001211104000010022432601"))
+    //   .concat(uvarint(suffix.length))
+    concat
+    // smart_contracts/nfd_query_reader/contract.algo.ts:567-571
+    // const program = Bytes.fromHex("052001018008")
+    //   .concat(op.itob(registry))
+    //   .concat(Bytes.fromHex("173500311834001231108106121031192212311981001211104000010022432601"))
+    //   .concat(uvarint(suffix.length))
+    //   .concat(suffix)
+    swap
+    concat
+    // smart_contracts/nfd_query_reader/contract.algo.ts:572
+    // return Account(op.sha512_256(Bytes`Program`.concat(program)))
+    pushbytes "Program"
+    swap
+    concat
+    sha512_256
+    dup
+    frame_bury 1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:322
+    // if (!op.appOptedIn(lsig, registry)) return 0
+    frame_dig -2
+    app_opted_in
+    bz appForName_if_body@1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:323
+    // const [appId, hasAppId] = op.AppLocal.getExBytes(lsig, registry, Bytes`i.appid`)
+    frame_dig 1
+    frame_dig -2
+    pushbytes "i.appid"
+    app_local_get_ex
+    swap
+    frame_bury 0
+    // smart_contracts/nfd_query_reader/contract.algo.ts:324
+    // if (!hasAppId || appId.length === 0 || appId.length > 8) return 0
+    bz appForName_if_body@1
+    frame_dig 0
+    len
+    dup
+    frame_bury 2
+    bz appForName_if_body@1
+    frame_dig 2
+    intc_2 // 8
+    >
+    bnz appForName_if_body@1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:325
+    // return op.btoi(appId)
+    frame_dig 0
+    btoi
+    frame_bury 0
+    retsub
+
+appForName_after_if_else@14:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:558
+    // return op.extract(op.itob((n & 0x7f) | 0x80), 7, 1).concat(op.extract(op.itob(n >> 7), 7, 1))
+    dup
+    pushint 127
+    &
+    pushint 128
+    |
+    itob
+    extract 7 1
+    swap
+    pushint 7
+    shr
+    itob
+    extract 7 1
+    concat
+    // smart_contracts/nfd_query_reader/contract.algo.ts:570
+    // .concat(uvarint(suffix.length))
+    b appForName_after_inlined_smart_contracts/nfd_query_reader/contract.algo.ts::uvarint@15
+
+
+// smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.scanCaAlgo(app: uint64, v1: uint64, target: bytes, opts: uint64) -> bytes:
+scanCaAlgo:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:375
+    // private scanCaAlgo(app: uint64, v1: boolean, target: Account, opts: uint64): Scan {
+    proto 4 1
+    intc_0 // 0
+    dupn 3
+    bytec_0 // ""
+    // smart_contracts/nfd_query_reader/contract.algo.ts:376
+    // const collect = (opts & F_CAALGO) !== 0
+    frame_dig -1
+    intc_1 // 1
+    &
+    // smart_contracts/nfd_query_reader/contract.algo.ts:524
+    // const max: uint64 = (opts >> 8) & 0xff
+    frame_dig -1
+    intc_2 // 8
+    shr
+    pushint 255
+    &
+    // smart_contracts/nfd_query_reader/contract.algo.ts:525
+    // return max < MAX_CA_ALGO ? max : MAX_CA_ALGO
+    dup
+    pushint 40
+    <
+    pushint 40
+    cover 2
+    select
+    swap
+    // smart_contracts/nfd_query_reader/contract.algo.ts:378
+    // let found = false
+    intc_0 // 0
+    cover 2
+    // smart_contracts/nfd_query_reader/contract.algo.ts:379
+    // let found0 = false
+    intc_0 // 0
+    cover 2
+    // smart_contracts/nfd_query_reader/contract.algo.ts:381
+    // let all = Bytes``
+    bytec_0 // ""
+    // smart_contracts/nfd_query_reader/contract.algo.ts:380
+    // let count: uint64 = 0
+    intc_0 // 0
+    // smart_contracts/nfd_query_reader/contract.algo.ts:382-383
+    // let first = Bytes``
+    // for (let n: uint64 = 0; n < MAX_CHUNKS; n++) {
+    dup2
+
+scanCaAlgo_while_top@1:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:383
+    // for (let n: uint64 = 0; n < MAX_CHUNKS; n++) {
+    dup
+    pushint 16
+    <
+    bz scanCaAlgo_block@36
+    // smart_contracts/nfd_query_reader/contract.algo.ts:384
+    // const key = Bytes`v.caAlgo.`.concat(decimal(n)).concat(Bytes`.as`)
+    dup
+    callsub decimal
+    pushbytes "v.caAlgo."
+    swap
+    concat
+    pushbytes ".as"
+    concat
+    frame_bury 2
+    // smart_contracts/nfd_query_reader/contract.algo.ts:386
+    // let chunk = Bytes``
+    bytec_0 // ""
+    frame_bury 1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:387
+    // if (v1) {
+    frame_dig -3
+    bz scanCaAlgo_else_body@6
+    // smart_contracts/nfd_query_reader/contract.algo.ts:388
+    // const [value, exists] = op.AppGlobal.getExBytes(app, key)
+    frame_dig -4
+    frame_dig 2
+    app_global_get_ex
+    swap
+    frame_bury 3
+    // smart_contracts/nfd_query_reader/contract.algo.ts:389
+    // if (!exists) break
+    bz scanCaAlgo_block@36
+    // smart_contracts/nfd_query_reader/contract.algo.ts:391
+    // length = value.length
+    frame_dig 3
+    dup
+    len
+    cover 2
+    frame_bury 1
+
+scanCaAlgo_after_if_else@9:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:397
+    // for (let offset: uint64 = 0; offset < length; offset += MAX_READ) {
+    intc_0 // 0
+    swap
+
+scanCaAlgo_while_top@10:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:397
+    // for (let offset: uint64 = 0; offset < length; offset += MAX_READ) {
+    dig 1
+    dig 3
+    <
+    bz scanCaAlgo_after_while@34
+    // smart_contracts/nfd_query_reader/contract.algo.ts:399
+    // if (!v1) {
+    frame_dig -3
+    bz scanCaAlgo_if_body@12
+    frame_dig 1
+    swap
+
+scanCaAlgo_after_if_else@16:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:403
+    // for (let at: uint64 = 0; at + 32 <= piece.length; at += 32) {
+    intc_0 // 0
+    cover 2
+
+scanCaAlgo_while_top@17:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:403
+    // for (let at: uint64 = 0; at + 32 <= piece.length; at += 32) {
+    dig 2
+    intc_3 // 32
+    +
+    dup
+    cover 2
+    dig 3
+    len
+    <=
+    bz scanCaAlgo_after_while@33
+    // smart_contracts/nfd_query_reader/contract.algo.ts:404
+    // const addr = op.extract(piece, at, 32)
+    dig 2
+    uncover 4
+    intc_3 // 32
+    extract3
+    dup
+    frame_bury 0
+    // smart_contracts/nfd_query_reader/contract.algo.ts:405
+    // if (addr === Global.zeroAddress.bytes) continue
+    global ZeroAddress
+    ==
+    bnz scanCaAlgo_block@32
+    // smart_contracts/nfd_query_reader/contract.algo.ts:406
+    // count++
+    uncover 6
+    intc_1 // 1
+    +
+    cover 6
+    // smart_contracts/nfd_query_reader/contract.algo.ts:407
+    // if (addr === target.bytes) {
+    frame_dig 0
+    frame_dig -2
+    ==
+    bz scanCaAlgo_after_if_else@24
+    // smart_contracts/nfd_query_reader/contract.algo.ts:408
+    // found = true
+    intc_1 // 1
+    frame_bury 5
+    // smart_contracts/nfd_query_reader/contract.algo.ts:409
+    // if (n === 0) found0 = true
+    dup
+    bnz scanCaAlgo_after_if_else@24
+    intc_1 // 1
+    frame_bury 6
+
+scanCaAlgo_after_if_else@24:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:411
+    // if (collect && count <= max) all = all.concat(addr)
+    dig 8
+    bz scanCaAlgo_after_if_else@27
+    dig 6
+    dig 10
+    <=
+    bz scanCaAlgo_after_if_else@27
+    uncover 7
+    frame_dig 0
+    concat
+    cover 7
+
+scanCaAlgo_after_if_else@27:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:412
+    // if (collect && n === 0 && first.length < max * 32) first = first.concat(addr)
+    dig 8
+    bz scanCaAlgo_block@32
+    dup
+    bnz scanCaAlgo_block@32
+    dig 5
+    len
+    dig 10
+    intc_3 // 32
+    *
+    <
+    bz scanCaAlgo_block@32
+    uncover 5
+    frame_dig 0
+    concat
+    cover 5
+
+scanCaAlgo_block@32:
+    swap
+    cover 2
+    b scanCaAlgo_while_top@17
+
+scanCaAlgo_after_while@33:
+    bury 1
+    bury 1
+    bury 1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:397
+    // for (let offset: uint64 = 0; offset < length; offset += MAX_READ) {
+    swap
+    intc 5 // 4096
+    +
+    swap
+    b scanCaAlgo_while_top@10
+
+scanCaAlgo_if_body@12:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:400
+    // const size: uint64 = length - offset < MAX_READ ? length - offset : MAX_READ
+    dig 2
+    dig 2
+    -
+    dup
+    intc 5 // 4096
+    <
+    bz scanCaAlgo_ternary_false@14
+
+scanCaAlgo_ternary_merge@15:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:401
+    // piece = op.AppBox.extract(app, key, offset, size)
+    frame_dig -4
+    frame_dig 2
+    dig 4
+    uncover 3
+    app_box_extract
+    swap
+    b scanCaAlgo_after_if_else@16
+
+scanCaAlgo_ternary_false@14:
+    pop
+    // smart_contracts/nfd_query_reader/contract.algo.ts:400
+    // const size: uint64 = length - offset < MAX_READ ? length - offset : MAX_READ
+    intc 5 // 4096
+    b scanCaAlgo_ternary_merge@15
+
+scanCaAlgo_after_while@34:
+    bury 1
+    bury 1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:383
+    // for (let n: uint64 = 0; n < MAX_CHUNKS; n++) {
+    intc_1 // 1
+    +
+    b scanCaAlgo_while_top@1
+
+scanCaAlgo_block@36:
+    pop
+    // smart_contracts/nfd_query_reader/contract.algo.ts:416
+    // return { found, found0, count, all, first }
+    pushbytes 0x00
+    intc_0 // 0
+    frame_dig 5
+    setbit
+    intc_1 // 1
+    frame_dig 6
+    setbit
+    uncover 2
+    itob
+    concat
+    uncover 2
+    dup
+    len
+    itob
+    extract 6 2
+    swap
+    concat
+    swap
+    pushbytes 0x000d
+    concat
+    dig 1
+    len
+    pushint 13
+    +
+    uncover 3
+    dup
+    len
+    itob
+    extract 6 2
+    swap
+    concat
+    swap
+    itob
+    extract 6 2
+    uncover 2
+    swap
+    concat
+    uncover 2
+    concat
+    swap
+    concat
+    frame_bury 0
+    retsub
+
+scanCaAlgo_else_body@6:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:393
+    // const [boxLength, exists] = op.AppBox.length(app, key)
+    frame_dig -4
+    frame_dig 2
+    app_box_len
+    swap
+    frame_bury 4
+    // smart_contracts/nfd_query_reader/contract.algo.ts:394
+    // if (!exists) break
+    bz scanCaAlgo_block@36
+    frame_dig 4
+    swap
+    b scanCaAlgo_after_if_else@9
+
+
+// smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.property(app: uint64, v1: uint64, key: bytes, max: uint64) -> bytes, uint64:
+property:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:423
+    // private property(app: uint64, v1: boolean, key: bytes, max: uint64): readonly [bytes, boolean] {
+    proto 4 2
+    intc_0 // 0
+    bytec_0 // ""
+    // smart_contracts/nfd_query_reader/contract.algo.ts:424
+    // if (v1) {
+    frame_dig -3
+    bz property_after_if_else@7
+    // smart_contracts/nfd_query_reader/contract.algo.ts:425
+    // const [value, exists] = op.AppGlobal.getExBytes(app, key)
+    frame_dig -4
+    frame_dig -2
+    app_global_get_ex
+    swap
+    frame_bury 0
+    // smart_contracts/nfd_query_reader/contract.algo.ts:426
+    // if (!exists) return [Bytes``, false]
+    bnz property_after_if_else@3
+
+property_if_body@2:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:426
+    // if (!exists) return [Bytes``, false]
+    bytec_0 // ""
+    intc_0 // 0
+    uncover 3
+    uncover 3
+    retsub
+
+property_after_if_else@3:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:427
+    // return [value.length > max ? value.slice(0, max) : value, true]
+    frame_dig 0
+    len
+    dup
+    frame_dig -1
+    >
+    bz property_ternary_false@5
+    intc_0 // 0
+    dig 1
+    >=
+    intc_0 // 0
+    dig 2
+    uncover 2
+    select
+    frame_dig -1
+    dig 2
+    >=
+    frame_dig -1
+    uncover 3
+    uncover 2
+    select
+    frame_dig 0
+    cover 2
+    substring3
+
+property_ternary_merge@6:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:427
+    // return [value.length > max ? value.slice(0, max) : value, true]
+    intc_1 // 1
+    uncover 3
+    uncover 3
+    retsub
+
+property_ternary_false@5:
+    pop
+    frame_dig 0
+    b property_ternary_merge@6
+
+property_after_if_else@7:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:429
+    // const [length, exists] = op.AppBox.length(app, key)
+    frame_dig -4
+    frame_dig -2
+    app_box_len
+    swap
+    frame_bury 1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:430
+    // if (!exists) return [Bytes``, false]
+    bz property_if_body@2
+    // smart_contracts/nfd_query_reader/contract.algo.ts:431
+    // if (length === 0) return [Bytes``, true]
+    frame_dig 1
+    bnz property_after_if_else@11
+    bytec_0 // ""
+    intc_1 // 1
+    uncover 3
+    uncover 3
+    retsub
+
+property_after_if_else@11:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:432
+    // return [op.AppBox.extract(app, key, 0, length < max ? length : max), true]
+    frame_dig 1
+    dup
+    frame_dig -1
+    <
+    frame_dig -1
+    cover 2
+    select
+    frame_dig -4
+    frame_dig -2
+    intc_0 // 0
+    uncover 3
+    app_box_extract
+    intc_1 // 1
+    uncover 3
+    uncover 3
+    retsub
+
+
+// smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.encodeRecord(app: uint64, core: bytes, opts: uint64, scan: bytes) -> bytes, bytes, bytes:
+encodeRecord:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:456
+    // private encodeRecord(app: uint64, core: Core, opts: uint64, scan: Scan): bytes {
+    proto 4 3
+    intc_0 // 0
+    dup
+    // smart_contracts/nfd_query_reader/contract.algo.ts:457
+    // const apply = propertiesApply(core)
+    frame_dig -3
+    callsub propertiesApply
+    frame_bury -3
+    dup
+    // smart_contracts/nfd_query_reader/contract.algo.ts:460
+    // name: cut(core.name, MAX_STRING),
+    frame_dig -3
+    intc_1 // 1
+    extract_uint16
+    frame_dig -3
+    pushint 3
+    extract_uint16
+    frame_dig -3
+    uncover 2
+    dig 2
+    substring3
+    extract 2 0
+    pushint 96
+    callsub cut
+    cover 3
+    // smart_contracts/nfd_query_reader/contract.algo.ts:461
+    // version: cut(core.version, MAX_STRING),
+    frame_dig -3
+    pushint 85
+    extract_uint16
+    frame_dig -3
+    uncover 2
+    dig 2
+    substring3
+    extract 2 0
+    pushint 96
+    callsub cut
+    cover 3
+    // smart_contracts/nfd_query_reader/contract.algo.ts:462
+    // owner: core.owner,
+    frame_dig -3
+    extract 5 32
+    cover 3
+    // smart_contracts/nfd_query_reader/contract.algo.ts:463
+    // asaId: core.asaId,
+    frame_dig -3
+    extract 69 8
+    cover 3
+    // smart_contracts/nfd_query_reader/contract.algo.ts:464
+    // parentAppId: core.parentAppId,
+    frame_dig -3
+    extract 77 8
+    cover 3
+    // smart_contracts/nfd_query_reader/contract.algo.ts:465
+    // category: cut(core.category, MAX_STRING),
+    frame_dig -3
+    len
+    frame_dig -3
+    cover 2
+    substring3
+    extract 2 0
+    pushint 96
+    callsub cut
+    cover 2
+    // smart_contracts/nfd_query_reader/contract.algo.ts:466
+    // sellAmount: core.sellAmount,
+    frame_dig -3
+    extract 87 8
+    cover 2
+    // smart_contracts/nfd_query_reader/contract.algo.ts:467
+    // expirationTime: core.expirationTime,
+    frame_dig -3
+    extract 95 8
+    cover 2
+    // smart_contracts/nfd_query_reader/contract.algo.ts:468
+    // state: core.state,
+    frame_dig -3
+    extract 103 8
+    cover 2
+    // smart_contracts/nfd_query_reader/contract.algo.ts:469
+    // caAlgoCount: apply ? scan.count : 0,
+    bz encodeRecord_ternary_false@4
+    frame_dig -1
+    intc_1 // 1
+    extract_uint64
+    swap
+
+encodeRecord_ternary_merge@5:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:470
+    // caAlgo: apply ? scan.all : Bytes``,
+    dup
+    bz encodeRecord_ternary_false@7
+    frame_dig -1
+    pushint 9
+    extract_uint16
+    frame_dig -1
+    pushint 11
+    extract_uint16
+    frame_dig -1
+    cover 2
+    substring3
+    extract 2 0
+    cover 2
+
+encodeRecord_ternary_merge@8:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:471
+    // caAlgo0: scan.first,
+    frame_dig -1
+    pushint 11
+    extract_uint16
+    frame_dig -1
+    len
+    frame_dig -1
+    cover 2
+    substring3
+    extract 2 0
+    frame_bury 1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:472
+    // avatar: apply && (opts & F_AVATAR) !== 0 ? this.avatar(app, core.v1) : Bytes``,
+    dup
+    bz encodeRecord_ternary_false@11
+    frame_dig -2
+    pushint 2
+    &
+    bz encodeRecord_ternary_false@11
+    frame_dig -3
+    intc_1 // 1
+    getbit
+    dup
+    // smart_contracts/nfd_query_reader/contract.algo.ts:436
+    // const [user, hasUser] = this.property(app, v1, Bytes`u.avatar`, MAX_AVATAR)
+    frame_dig -4
+    swap
+    pushbytes "u.avatar"
+    pushint 256
+    callsub property
+    // smart_contracts/nfd_query_reader/contract.algo.ts:437
+    // if (hasUser && user.length > 0) return user
+    bz encodeRecord_after_if_else@30
+    dup
+    len
+    bz encodeRecord_after_if_else@30
+    bury 1
+    swap
+
+encodeRecord_ternary_merge@12:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:473
+    // bio: apply && (opts & F_BIO) !== 0 ? this.bio(app, core.v1) : Bytes``,
+    bz encodeRecord_ternary_false@15
+    frame_dig -2
+    pushint 4
+    &
+    bz encodeRecord_ternary_false@15
+    frame_dig -3
+    intc_1 // 1
+    getbit
+    dup
+    // smart_contracts/nfd_query_reader/contract.algo.ts:444
+    // let [bio] = this.property(app, v1, Bytes`u.bio`, MAX_BIO)
+    frame_dig -4
+    swap
+    pushbytes "u.bio"
+    intc 4 // 768
+    callsub property
+    pop
+    // smart_contracts/nfd_query_reader/contract.algo.ts:445
+    // for (let k: uint64 = 0; k < MAX_BIO_PARTS && bio.length < MAX_BIO; k++) {
+    intc_0 // 0
+
+encodeRecord_while_top@18:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:445
+    // for (let k: uint64 = 0; k < MAX_BIO_PARTS && bio.length < MAX_BIO; k++) {
+    dup
+    pushint 16
+    <
+    bz encodeRecord_block@22
+    dig 1
+    len
+    intc 4 // 768
+    <
+    bz encodeRecord_block@22
+    // smart_contracts/nfd_query_reader/contract.algo.ts:548
+    // return digit(n / 10).concat(digit(n % 10))
+    dupn 2
+    pushint 10
+    /
+    // smart_contracts/nfd_query_reader/contract.algo.ts:552
+    // return op.extract(op.itob(n + 48), 7, 1)
+    pushint 48
+    +
+    itob
+    extract 7 1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:548
+    // return digit(n / 10).concat(digit(n % 10))
+    swap
+    pushint 10
+    %
+    // smart_contracts/nfd_query_reader/contract.algo.ts:552
+    // return op.extract(op.itob(n + 48), 7, 1)
+    pushint 48
+    +
+    itob
+    extract 7 1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:548
+    // return digit(n / 10).concat(digit(n % 10))
+    concat
+    // smart_contracts/nfd_query_reader/contract.algo.ts:446
+    // const [part, exists] = this.property(app, v1, Bytes`u.bio_`.concat(twoDigits(k)), MAX_BIO)
+    pushbytes "u.bio_"
+    swap
+    concat
+    frame_dig -4
+    dig 4
+    uncover 2
+    intc 4 // 768
+    callsub property
+    swap
+    frame_bury 0
+    // smart_contracts/nfd_query_reader/contract.algo.ts:447
+    // if (!exists) break
+    bz encodeRecord_block@22
+    // smart_contracts/nfd_query_reader/contract.algo.ts:448
+    // bio = bio.concat(part)
+    swap
+    frame_dig 0
+    concat
+    swap
+    // smart_contracts/nfd_query_reader/contract.algo.ts:445
+    // for (let k: uint64 = 0; k < MAX_BIO_PARTS && bio.length < MAX_BIO; k++) {
+    intc_1 // 1
+    +
+    b encodeRecord_while_top@18
+
+encodeRecord_block@22:
+    pop
+    bury 1
+    // smart_contracts/nfd_query_reader/contract.algo.ts:450
+    // return bio.length > MAX_BIO ? bio.slice(0, MAX_BIO) : bio
+    dup
+    len
+    dup
+    intc 4 // 768
+    >
+    bz encodeRecord_ternary_false@24
+    intc_0 // 0
+    dig 1
+    >=
+    intc_0 // 0
+    dig 2
+    uncover 2
+    select
+    intc 4 // 768
+    dig 2
+    >=
+    intc 4 // 768
+    uncover 3
+    uncover 2
+    select
+    substring3
+
+encodeRecord_ternary_merge@16:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:458-474
+    // const record: NfdRecord = {
+    //   appId: app,
+    //   name: cut(core.name, MAX_STRING),
+    //   version: cut(core.version, MAX_STRING),
+    //   owner: core.owner,
+    //   asaId: core.asaId,
+    //   parentAppId: core.parentAppId,
+    //   category: cut(core.category, MAX_STRING),
+    //   sellAmount: core.sellAmount,
+    //   expirationTime: core.expirationTime,
+    //   state: core.state,
+    //   caAlgoCount: apply ? scan.count : 0,
+    //   caAlgo: apply ? scan.all : Bytes``,
+    //   caAlgo0: scan.first,
+    //   avatar: apply && (opts & F_AVATAR) !== 0 ? this.avatar(app, core.v1) : Bytes``,
+    //   bio: apply && (opts & F_BIO) !== 0 ? this.bio(app, core.v1) : Bytes``,
+    // }
+    frame_dig -4
+    itob
+    frame_dig 2
+    dup
+    len
+    itob
+    extract 6 2
+    swap
+    concat
+    swap
+    pushbytes 0x0066
+    concat
+    dig 1
+    len
+    pushint 102
+    +
+    frame_dig 3
+    dup
+    len
+    itob
+    extract 6 2
+    swap
+    concat
+    dig 1
+    itob
+    extract 6 2
+    uncover 3
+    swap
+    concat
+    dig 1
+    len
+    uncover 3
+    +
+    swap
+    frame_dig 4
+    concat
+    frame_dig 5
+    concat
+    frame_dig 6
+    concat
+    frame_dig 7
+    dup
+    len
+    itob
+    extract 6 2
+    swap
+    concat
+    dig 2
+    itob
+    extract 6 2
+    uncover 2
+    swap
+    concat
+    dig 1
+    len
+    uncover 3
+    +
+    swap
+    frame_dig 8
+    concat
+    frame_dig 9
+    concat
+    frame_dig 10
+    concat
+    uncover 7
+    itob
+    concat
+    uncover 7
+    dup
+    len
+    itob
+    extract 6 2
+    swap
+    concat
+    dig 2
+    itob
+    extract 6 2
+    uncover 2
+    swap
+    concat
+    dig 1
+    len
+    uncover 3
+    +
+    frame_dig 1
+    dup
+    len
+    itob
+    extract 6 2
+    swap
+    concat
+    dig 1
+    itob
+    extract 6 2
+    uncover 3
+    swap
+    concat
+    dig 1
+    len
+    uncover 3
+    +
+    uncover 8
+    dup
+    len
+    itob
+    extract 6 2
+    swap
+    concat
+    dig 1
+    itob
+    extract 6 2
+    uncover 3
+    swap
+    concat
+    dig 1
+    len
+    uncover 3
+    +
+    uncover 8
+    dup
+    len
+    itob
+    extract 6 2
+    swap
+    concat
+    swap
+    itob
+    extract 6 2
+    uncover 2
+    swap
+    concat
+    uncover 7
+    concat
+    uncover 6
+    concat
+    uncover 5
+    concat
+    uncover 4
+    concat
+    uncover 3
+    concat
+    uncover 2
+    concat
+    swap
+    concat
+    // smart_contracts/nfd_query_reader/contract.algo.ts:475
+    // return Bytes.fromHex("01").concat(encodeArc4(record))
+    pushbytes 0x01
+    swap
+    concat
+    frame_dig -3
+    frame_dig -1
+    frame_bury 2
+    frame_bury 1
+    frame_bury 0
+    retsub
+
+encodeRecord_ternary_false@24:
+    pop
+    b encodeRecord_ternary_merge@16
+
+encodeRecord_ternary_false@15:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:473
+    // bio: apply && (opts & F_BIO) !== 0 ? this.bio(app, core.v1) : Bytes``,
+    bytec_0 // ""
+    b encodeRecord_ternary_merge@16
+
+encodeRecord_after_if_else@30:
+    pop
+    // smart_contracts/nfd_query_reader/contract.algo.ts:438
+    // const [verified] = this.property(app, v1, Bytes`v.avatar`, MAX_AVATAR)
+    frame_dig -4
+    swap
+    pushbytes "v.avatar"
+    pushint 256
+    callsub property
+    pop
+    swap
+    // smart_contracts/nfd_query_reader/contract.algo.ts:472
+    // avatar: apply && (opts & F_AVATAR) !== 0 ? this.avatar(app, core.v1) : Bytes``,
+    b encodeRecord_ternary_merge@12
+
+encodeRecord_ternary_false@11:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:472
+    // avatar: apply && (opts & F_AVATAR) !== 0 ? this.avatar(app, core.v1) : Bytes``,
+    bytec_0 // ""
+    swap
+    b encodeRecord_ternary_merge@12
+
+encodeRecord_ternary_false@7:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:470
+    // caAlgo: apply ? scan.all : Bytes``,
+    bytec_0 // ""
+    cover 2
+    b encodeRecord_ternary_merge@8
+
+encodeRecord_ternary_false@4:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:469
+    // caAlgoCount: apply ? scan.count : 0,
+    intc_0 // 0
+    swap
+    b encodeRecord_ternary_merge@5
+
+
+// smart_contracts/nfd_query_reader/contract.algo.ts::NfdQueryReader.logRecordWithin(app: uint64, core: bytes, opts: uint64, scan: bytes, logged: uint64) -> uint64, bytes, bytes:
+logRecordWithin:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:486
+    // private logRecordWithin(app: uint64, core: Core, opts: uint64, scan: Scan, logged: uint64): uint64 {
+    proto 5 3
+    // smart_contracts/nfd_query_reader/contract.algo.ts:487
+    // const record = this.encodeRecord(app, core, opts, scan)
+    frame_dig -5
+    frame_dig -4
+    frame_dig -3
+    frame_dig -2
+    callsub encodeRecord
+    frame_bury -2
+    frame_bury -4
+    // smart_contracts/nfd_query_reader/contract.algo.ts:488
+    // if (logged > 0 && logged + record.length + MARKER_BYTES > logBudget(opts)) return 0
+    frame_dig -1
+    bz logRecordWithin_after_if_else@7
+    dup
+    len
+    frame_dig -1
+    +
+    pushint 17
+    +
+    // smart_contracts/nfd_query_reader/contract.algo.ts:529
+    // return (opts >> 16) & 0xffffff
+    frame_dig -3
+    pushint 16
+    shr
+    pushint 16777215
+    &
+    // smart_contracts/nfd_query_reader/contract.algo.ts:488
+    // if (logged > 0 && logged + record.length + MARKER_BYTES > logBudget(opts)) return 0
+    >
+    bz logRecordWithin_after_if_else@7
+    intc_0 // 0
+    frame_dig -4
+    frame_dig -2
+    uncover 3
+    retsub
+
+logRecordWithin_after_if_else@7:
+    // smart_contracts/nfd_query_reader/contract.algo.ts:489
+    // log(record)
+    dup
+    log
+    // smart_contracts/nfd_query_reader/contract.algo.ts:490
+    // return record.length
+    len
+    frame_dig -4
+    frame_dig -2
+    retsub

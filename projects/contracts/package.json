@@ -1,10 +1,10 @@
 {
   "name": "smart_contracts",
   "version": "1.0.0",
-  "description": "Smart contract deployer",
+  "description": "NfdQueryReader: the NFD ghost reader run by read-only queries",
   "main": "smart_contracts/index.ts",
   "scripts": {
-    "build": "algokit compile ts smart_contracts --out-dir artifacts && npx ghostkit build smart_contracts/artifacts/nfd_reader/NfdReader.arc56.json",
+    "build": "puya-ts smart_contracts/nfd_query_reader/contract.algo.ts --out-dir ../artifacts/nfd_query_reader --output-bytecode --optimization-level 2 --no-output-arc32 --no-output-client",
     "deploy": "ts-node-dev --transpile-only --watch .env -r dotenv/config smart_contracts/index.ts",
     "deploy:ci": "ts-node --transpile-only -r dotenv/config smart_contracts/index.ts",
     "check-types": "tsc --noEmit"
@@ -14,18 +14,17 @@
     "npm": ">=9.0"
   },
   "dependencies": {
-    "@algorandfoundation/algorand-typescript": "^1.0.1"
+    "@algorandfoundation/algorand-typescript": "^1.3.1"
   },
   "devDependencies": {
     "@algorandfoundation/algokit-client-generator": "^6.0.0",
     "@algorandfoundation/algokit-utils": "^9.0.0",
     "@algorandfoundation/algokit-utils-debug": "^1.0.4",
-    "@algorandfoundation/puya-ts": "^1.0.1",
+    "@algorandfoundation/puya-ts": "^1.3.1",
     "@rollup/plugin-typescript": "^12.1.2",
     "@tsconfig/node22": "^22.0.0",
     "algosdk": "^3.0.0",
     "dotenv": "^16.4.7",
-    "ghostkit": "^0.0.4",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.7.3"
   },

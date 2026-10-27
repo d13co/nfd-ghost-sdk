@@ -1,0 +1,6 @@
+# dtalgorand forks, vendored until published: one copy of each everywhere
+overrides:
+  algosdk: file:../../vendor/dtalgosdk-3.9.0-dt.2.0.1.0.tgz
+  '@algorandfoundation/algokit-utils': file:../../vendor/d13co-dt-algokit-utils-9.2.3-dt.2.0.1.0.tgz
+onlyBuiltDependencies:
+  - esbuild

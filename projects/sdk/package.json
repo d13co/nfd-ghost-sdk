@@ -1,27 +1,65 @@
 {
   "name": "nfd-ghost-sdk",
-  "version": "0.0.1",
-  "description": "",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "version": "2.0.0-dt.1",
+  "description": "Read-only NFD lookups (forward, reverse, ownership) for every NFD and registry generation, at any round, through read-only queries on a dtalgorand node",
+  "type": "module",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/cjs/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
   "files": [
     "dist/"
   ],
-  "scripts": {
-    "prebuild": "cp ../contracts/smart_contracts/artifacts/nfd_reader/NfdReaderSDK.ts src/generated",
-    "build": "tsc"
+  "publishConfig": {
+    "tag": "dt"
   },
-  "keywords": [],
+  "scripts": {
+    "prebuild": "node scripts/copy-reader.mjs",
+    "clean": "rm -rf dist",
+    "build": "pnpm run clean && pnpm run build:esm && pnpm run build:cjs && pnpm run build:dist-pkg",
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build:dist-pkg": "node scripts/write-dist-package-json.mjs",
+    "check-types": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "verify": "tsx examples/fixtures.ts",
+    "verify:rest": "tsx examples/verify-rest.ts",
+    "verify:rounds": "tsx examples/verify-rounds.ts"
+  },
+  "keywords": [
+    "algorand",
+    "nfd",
+    "nfdomains",
+    "dtalgorand",
+    "time-travel",
+    "query"
+  ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "packageManager": "pnpm@10.11.0",
-  "dependencies": {
-    "@algorandfoundation/algokit-utils": "^9.2.0",
-    "algosdk": "3.5.2",
-    "p-map": "^7.0.4"
+  "peerDependencies": {
+    "@algorandfoundation/algokit-utils": ">=9.2.0",
+    "algosdk": ">=3.5.2"
   },
   "devDependencies": {
+    "@algorandfoundation/algokit-utils": "file:../../vendor/d13co-dt-algokit-utils-9.2.3-dt.2.0.1.0.tgz",
     "@types/node": "^25.0.3",
-    "tsx": "^4.21.0"
+    "algosdk": "file:../../vendor/dtalgosdk-3.9.0-dt.2.0.1.0.tgz",
+    "tsx": "^4.21.0",
+    "typescript": "^5.7.3",
+    "vitest": "3.2.4"
   }
 }

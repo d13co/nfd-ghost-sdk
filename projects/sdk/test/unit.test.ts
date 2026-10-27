@@ -1,0 +1,188 @@
+import { describe, expect, it } from "vitest"
+import { ABIType } from "algosdk"
+import { addressLsigAddress, nameLsigAddress, uvarint, lookupLsigProgram } from "../src/lsig.js"
+import { decodeRecord, encodeOpts, parseLogs } from "../src/reader.js"
+import { seriesRounds } from "../src/series.js"
+import { QueryEngine, type CallSpec } from "../src/engine.js"
+
+const REG = 760937186n
+
+describe("v1 lookup lsigs", () => {
+  it("derives the reverse lsig of 818.algo's owner (DESIGN-v2 2.1)", () => {
+    expect(addressLsigAddress(REG, "43H6L4VKWP23F3UO64GUS4M5TFT5MOZRJPUFO57M3X2SDONQXJCT5MQZRE")).toBe(
+      "BE3YV7YS6HPJYO676GBDU4ARBIOT7R4TTZRBGZC7XHJPGUOKE6PK6SMSQA",
+    )
+  })
+  it("derives a name lsig", () => {
+    expect(nameLsigAddress(REG, "king.dragonfi.algo")).toBe(
+      "FPUYLUPCJPENUVCTLD5DQL5BGHWUJLM6OSVL2HMJFED7YGVV5E3TNHDN2Y",
+    )
+  })
+  it("puts the registry id at bytes 6–13 and a 1-byte length for a 66-byte reverse suffix", () => {
+    const program = lookupLsigProgram(84366825n, new Uint8Array(66))
+    expect(new DataView(program.buffer).getBigUint64(6)).toBe(84366825n)
+    expect(program[47]).toBe(66)
+    expect(program.length).toBe(47 + 1 + 66)
+  })
+  it("encodes uvarints as Go's PutUvarint", () => {
+    expect([...uvarint(0)]).toEqual([0])
+    expect([...uvarint(127)]).toEqual([127])
+    expect([...uvarint(128)]).toEqual([0x80, 0x01])
+    expect([...uvarint(300)]).toEqual([0xac, 0x02])
+  })
+  it("rejects an address with a bad checksum", () => {
+    expect(() => addressLsigAddress(REG, "43H6L4VKWP23F3UO64GUS4M5TFT5MOZRJPUFO57M3X2SDONQXJCT5MQZRA")).toThrow()
+  })
+})
+
+describe("reader encoding", () => {
+  it("packs fields, the caAlgo cap and the log budget", () => {
+    expect(encodeOpts(["caAlgo", "avatar", "bio"], 40, 65_000)).toBe(7n | (40n << 8n) | (65_000n << 16n))
+    expect(encodeOpts([], 100, 0)).toBe(40n << 8n)
+    expect(() => encodeOpts(["nope" as never], 1, 1)).toThrow()
+  })
+
+  const type = ABIType.from(
+    "(uint64,byte[],byte[],address,uint64,uint64,byte[],uint64,uint64,uint64,uint64,byte[],byte[],byte[],byte[])",
+  )
+  const zero = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ"
+  const enc = (s: string) => new TextEncoder().encode(s)
+  const owner = new Uint8Array(32).fill(7)
+
+  it("decodes a record log", () => {
+    const body = type.encode([
+      5n,
+      enc("a.algo"),
+      enc("3.7"),
+      zero,
+      6n,
+      0n,
+      enc("common"),
+      0n,
+      1_700_000_000n,
+      2n,
+      1n,
+      owner,
+      owner,
+      enc(""),
+      enc("hi"),
+    ])
+    const [record] = parseLogs([Uint8Array.from([1, ...body])], 9n).records
+    expect(record).toMatchObject({
+      appId: 5n,
+      name: "a.algo",
+      version: "3.7",
+      major: 3,
+      asaId: 6n,
+      parentAppId: null,
+      category: "common",
+      state: "expired",
+      expiresAt: 1_700_000_000,
+      caAlgoCount: 1,
+      bio: "hi",
+      round: 9n,
+    })
+    expect(record.avatar).toBeUndefined()
+    expect(record.caAlgo).toHaveLength(1)
+    expect(decodeRecord(body, 9n).name).toBe("a.algo")
+  })
+
+  it("parses the more marker", () => {
+    const marker = new Uint8Array(17)
+    marker[0] = 2
+    new DataView(marker.buffer).setBigUint64(1, 128n)
+    new DataView(marker.buffer).setBigUint64(9, 300n)
+    expect(parseLogs([marker], 1n).more).toEqual({ next: 128n, total: 300n })
+  })
+})
+
+describe("series rounds", () => {
+  it("spreads points evenly, both ends included, deduplicated", () => {
+    expect(seriesRounds({ from: 10, to: 20, points: 3 })).toEqual([10n, 15n, 20n])
+    expect(seriesRounds([5, 3, 5])).toEqual([3n, 5n])
+    expect(() => seriesRounds([1, 2, 3], 2)).toThrow(RangeError)
+  })
+})
+
+describe("series round caps", () => {
+  it("caps points at the rounds in the range before building the list", () => {
+    expect(seriesRounds({ from: 1, to: 10, points: 1e9 })).toEqual([1n, 2n, 3n, 4n, 5n, 6n, 7n, 8n, 9n, 10n])
+    expect(() => seriesRounds({ from: 1, to: 1e12, points: 1e9 })).toThrow(RangeError)
+    expect(() => seriesRounds({ from: 1, to: 10, points: Number.NaN })).toThrow(RangeError)
+  })
+})
+
+/** An AlgorandClient stand-in whose `query.run` answers every call with `answer`, after `delayMs`. */
+function fakeAlgorand(
+  answer: (limit: bigint) => { ok: true; logs: Uint8Array[] } | { ok: false; message: string },
+  delayMs = 0,
+) {
+  const stats = { runs: 0, inFlight: 0, maxInFlight: 0 }
+  const query = {
+    limits: async () => ({ maxCalls: 1, maxRounds: 64 }),
+    run: async (params: { calls: { args: Uint8Array[] }[]; rounds?: bigint[] }, options: { concurrency?: number }) => {
+      stats.runs++
+      const share = options.concurrency ?? 4
+      stats.inFlight += share
+      stats.maxInFlight = Math.max(stats.maxInFlight, stats.inFlight)
+      await new Promise((resolve) => setTimeout(resolve, delayMs))
+      stats.inFlight -= share
+      return (params.rounds ?? [100n]).map((round) => ({
+        round,
+        calls: params.calls.map((call, callIndex) => {
+          // getRecord's last uint64 argument carries the page size in these tests
+          const limit = new DataView(call.args[3].buffer, call.args[3].byteOffset).getBigUint64(0)
+          const a = answer(limit)
+          return a.ok
+            ? { ok: true as const, callIndex, round, logs: a.logs, cost: 1 }
+            : { ok: false as const, callIndex, round, error: { failureMessage: a.message, message: a.message } }
+        }),
+      }))
+    },
+  }
+  return { algorand: { query } as never, stats }
+}
+
+const paged = (label: string): CallSpec => ({
+  label,
+  method: "getRecord",
+  args: (_start, limit) => [1n, 2n, limit],
+  limit: 128,
+})
+
+describe("query engine", () => {
+  it("keeps every query's requests within one shared concurrency", async () => {
+    const { algorand, stats } = fakeAlgorand(() => ({ ok: true, logs: [] }), 20)
+    const engine = new QueryEngine(algorand, 4, false)
+    // three queries of 4 calls each: 4 requests apiece at maxCalls 1
+    const specs = [0, 1, 2, 3].map((i) => paged(`c${i}`))
+    await Promise.all([engine.run(specs, undefined), engine.run(specs, [5n]), engine.run(specs, [6n])])
+    expect(stats.runs).toBe(3)
+    expect(stats.maxInFlight).toBeLessThanOrEqual(4)
+  })
+
+  it("fails an ordinary call error at once, without smaller pages", async () => {
+    const { algorand, stats } = fakeAlgorand(() => ({
+      ok: false,
+      message: "logic eval error: + overflowed. Details: pc=14",
+    }))
+    const [result] = await new QueryEngine(algorand, 4, false).run([paged("overflow")], undefined)
+    expect(result.outcomes[0].ok).toBe(false)
+    expect(stats.runs).toBe(1)
+  })
+
+  it("halves the page on the node's limit errors, down to one", async () => {
+    const message = "logic eval error: dynamic cost budget exceeded, executing b: local program cost was 320000"
+    const { algorand, stats } = fakeAlgorand((limit) => (limit > 16n ? { ok: false, message } : { ok: true, logs: [] }))
+    const [result] = await new QueryEngine(algorand, 4, false).run([paged("budget")], undefined)
+    expect(result.outcomes[0].ok).toBe(true)
+    expect(stats.runs).toBe(4) // 128, 64, 32, 16
+    const { algorand: always, stats: alwaysStats } = fakeAlgorand(() => ({
+      ok: false,
+      message: "program logs too large. 69632 bytes > 65536 bytes limit",
+    }))
+    const [failed] = await new QueryEngine(always, 4, false).run([paged("logs")], undefined)
+    expect(failed.outcomes[0].ok).toBe(false)
+    expect(alwaysStats.runs).toBe(8) // 128 … 1
+  })
+})
