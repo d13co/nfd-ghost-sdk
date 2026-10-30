@@ -5,19 +5,19 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  algosdk: file:../../vendor/dtalgosdk-3.9.0-dt.2.0.1.0.tgz
-  '@algorandfoundation/algokit-utils': file:../../vendor/d13co-dt-algokit-utils-9.2.3-dt.2.0.1.0.tgz
+  algosdk: file:../../vendor/dtalgosdk-3.9.0-dt.4.1.0.0.tgz
+  '@algorandfoundation/algokit-utils': file:../../vendor/d13co-dt-algokit-utils-9.2.3-dt.4.1.0.0.tgz
 
 importers:
 
   .:
     dependencies:
       '@algorandfoundation/algokit-utils':
-        specifier: file:../../vendor/d13co-dt-algokit-utils-9.2.3-dt.2.0.1.0.tgz
-        version: '@d13co/dt-algokit-utils@file:../../vendor/d13co-dt-algokit-utils-9.2.3-dt.2.0.1.0.tgz(dtalgosdk@file:../../vendor/dtalgosdk-3.9.0-dt.2.0.1.0.tgz)'
+        specifier: file:../../vendor/d13co-dt-algokit-utils-9.2.3-dt.4.1.0.0.tgz
+        version: '@d13co/dt-algokit-utils@file:../../vendor/d13co-dt-algokit-utils-9.2.3-dt.4.1.0.0.tgz(dtalgosdk@file:../../vendor/dtalgosdk-3.9.0-dt.4.1.0.0.tgz)'
       algosdk:
-        specifier: file:../../vendor/dtalgosdk-3.9.0-dt.2.0.1.0.tgz
-        version: dtalgosdk@file:../../vendor/dtalgosdk-3.9.0-dt.2.0.1.0.tgz
+        specifier: file:../../vendor/dtalgosdk-3.9.0-dt.4.1.0.0.tgz
+        version: dtalgosdk@file:../../vendor/dtalgosdk-3.9.0-dt.4.1.0.0.tgz
     devDependencies:
       '@types/node':
         specifier: ^25.0.3
@@ -34,12 +34,12 @@ importers:
 
 packages:
 
-  '@d13co/dt-algokit-utils@file:../../vendor/d13co-dt-algokit-utils-9.2.3-dt.2.0.1.0.tgz':
-    resolution: {integrity: sha512-U8tNdbX1/o86s4emaJ3DGYBVA5qZGyIokrvvGUIZT1M9uIq3OrQM5Ukiq1IivzkeAzwrMsW1Zg0eOzucqc+0NA==, tarball: file:../../vendor/d13co-dt-algokit-utils-9.2.3-dt.2.0.1.0.tgz}
-    version: 9.2.3-dt.2.0.1.0
+  '@d13co/dt-algokit-utils@file:../../vendor/d13co-dt-algokit-utils-9.2.3-dt.4.1.0.0.tgz':
+    resolution: {integrity: sha512-VI2kLqvfBl0hN00V3ssLXvjsqj2c+j93Eatf8oDOl9LqlPNvcQVeM/2e29CoHD1XV+JaCTZr1JNEtu869vbpiA==, tarball: file:../../vendor/d13co-dt-algokit-utils-9.2.3-dt.4.1.0.0.tgz}
+    version: 9.2.3-dt.4.1.0.0
     engines: {node: '>=22.0'}
     peerDependencies:
-      algosdk: ^3.5.2 || ^3.8.0-dt.0 || ^3.9.0-dt.0
+      algosdk: ^3.5.2 || ^3.9.0-dt.4.1.0.0
 
   '@esbuild/aix-ppc64@0.28.2':
     resolution: {integrity: sha512-XExcO+dvLKvVtNTibSTBej1NCAbaGhWn9Ww1ZPx80qsahhPFe/8jgWP0IchNe0F3HwkU7n8ejhH8bjonqht8mQ==}
@@ -417,9 +417,9 @@ packages:
     resolution: {integrity: sha512-h5k/5U50IJJFpzfL6nO9jaaumfjO/f2NjK/oYB2Djzm4p9L+3T9qWpZqZ2hAbLPuuYq9wrU08WQyBTL5GbPk5Q==}
     engines: {node: '>=6'}
 
-  dtalgosdk@file:../../vendor/dtalgosdk-3.9.0-dt.2.0.1.0.tgz:
-    resolution: {integrity: sha512-l9ZfWbKqEE+lLQTRkg0Tj/u1SbRAzBWcGpfokEExkyoJNb1Z31HNpZQcMgB197AK7IM4hnySMxqNfvQxUBQq6w==, tarball: file:../../vendor/dtalgosdk-3.9.0-dt.2.0.1.0.tgz}
-    version: 3.9.0-dt.2.0.1.0
+  dtalgosdk@file:../../vendor/dtalgosdk-3.9.0-dt.4.1.0.0.tgz:
+    resolution: {integrity: sha512-+C78ke+iWJWaE2UnncmM0E7WtbBwzsEgElic03CUQnTmVjE8uc4SJ9YNx71q5pp/4IwhyXi7mQiApHNg5QJCGQ==, tarball: file:../../vendor/dtalgosdk-3.9.0-dt.4.1.0.0.tgz}
+    version: 3.9.0-dt.4.1.0.0
     engines: {node: '>=22.0'}
 
   es-module-lexer@1.7.0:
@@ -646,9 +646,9 @@ packages:
 
 snapshots:
 
-  '@d13co/dt-algokit-utils@file:../../vendor/d13co-dt-algokit-utils-9.2.3-dt.2.0.1.0.tgz(dtalgosdk@file:../../vendor/dtalgosdk-3.9.0-dt.2.0.1.0.tgz)':
+  '@d13co/dt-algokit-utils@file:../../vendor/d13co-dt-algokit-utils-9.2.3-dt.4.1.0.0.tgz(dtalgosdk@file:../../vendor/dtalgosdk-3.9.0-dt.4.1.0.0.tgz)':
     dependencies:
-      algosdk: dtalgosdk@file:../../vendor/dtalgosdk-3.9.0-dt.2.0.1.0.tgz
+      algosdk: dtalgosdk@file:../../vendor/dtalgosdk-3.9.0-dt.4.1.0.0.tgz
       buffer: 6.0.3
 
   '@esbuild/aix-ppc64@0.28.2':
@@ -899,7 +899,7 @@ snapshots:
 
   deep-eql@5.0.2: {}
 
-  dtalgosdk@file:../../vendor/dtalgosdk-3.9.0-dt.2.0.1.0.tgz:
+  dtalgosdk@file:../../vendor/dtalgosdk-3.9.0-dt.4.1.0.0.tgz:
     dependencies:
       algorand-msgpack: 1.1.0
       hi-base32: 0.5.1

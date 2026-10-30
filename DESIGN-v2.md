@@ -98,7 +98,7 @@ From `ledger/simulation/query.go`, `ledger/eval/eval_query.go`, commit `676100b5
 - **Foreign box reads (`676100b5f`):** `app_box_get`, `app_box_len` and `app_box_extract` read any app's boxes, as if every app had set `ForeignBoxReads`. Writes are still refused. This is a query-only setting: block evaluation and simulate keep it off.
   - A missing box: `exists = 0` and an empty value.
   - **An app that doesn't exist at R is an error**, not a missing box. Guard every `app_box_*` with `app_params_get AppCreator` (which returns an exists flag). Tested on :8081: the guard works for a deleted app and for an app not yet created at the round.
-- **The program is TEAL v13.** Queries run under the latest protocol by default (`v42`, AVM 13) at every round, so v13 opcodes work at 2022 rounds too.
+- **The program is TEAL v13.** Queries run under the latest protocol by default (`v43`, AVM 13) at every round, so v13 opcodes work at 2022 rounds too.
 - Each call fails on its own and keeps its logs. Nothing in this design is expected to fail; that isolation now only limits the damage of a bug.
 
 ### 2.5 TxnLab's Go on-chain reader (prior art)
@@ -196,10 +196,10 @@ reti-ui asks one item at a time: a hook per validator NFD, and a `useQueries` en
 
 ### 4.6 Transport: query only
 
-- **Calls:** call `algorand.query.run` from `@d13co/dt-algokit-utils` 9.2.3-dt.2.0.1.0 directly. It splits by `maxCalls`/`maxRounds`, runs requests concurrently, takes an abort signal and reports per-call errors.
+- **Calls:** call `algorand.query.run` from `@d13co/dt-algokit-utils` 9.2.3-dt.4.1.0.0 directly. It splits by `maxCalls`/`maxRounds`, runs requests concurrently, takes an abort signal and reports per-call errors.
 - **No ghostkit:** there's no simulate backend to generate. Encode args with `algosdk.ABIMethod` from the reader's `arc56.json`, and decode logs with `ABIType`.
 - **Retry 503s** (the node's admission limiter) with backoff, and cap concurrency at the node's parallelism.
-- **Feature detection:** time travel and queries are detected from `GET /v2/transactions/simulate/limits` (`time-travel`, `query`), as reti-ghost-sdk does. Every query endpoint reads foreign boxes, so "has `query`" is the whole check, with no probe or extra flag.
+- **Feature detection:** time travel and queries are detected from `GET /v2/capabilities` (`time-travel`, `query`), read through the forks, as reti-ghost-sdk does. Every query endpoint reads foreign boxes, so "has `query`" is the whole check, with no probe or extra flag.
 - **Without queries** (stock algod), `sdk.supported()` is false and every read throws `NfdQueryUnavailableError`. reti-ui then keeps today's REST path, latest only. This SDK no longer has a simulate fallback: it existed only to work around failures that can no longer happen, and REST already covers the latest round.
 
 ### 4.7 Public API

@@ -340,7 +340,7 @@ export class NfdGhostSDK {
   // ---------------------------------------------------------------------------------------------------------------
   // Series
 
-  /** `getRecords` at each of `rounds`: one query per 64 rounds, each round exact. */
+  /** `getRecords` at each of `rounds`: one query per `maxRounds` rounds (the node's limit), each round exact. */
   async getRecordsSeries(
     appIds: (number | bigint)[],
     rounds: SeriesRounds,
@@ -397,8 +397,8 @@ export class NfdGhostSDK {
    * `FutureRoundError` before any query, and a failed read throws its error.
    *
    * Reads every NFD only at the rounds asked for it, unlike a series, which reads every key at every round: the pairs
-   * are packed into queries of at most 64 rounds (the node's `maxRounds`) and 1,024 NFDs (`maxCalls`), NFDs wanted at
-   * the same or nearby rounds together. Each query reads its NFDs at all its rounds, at most 16 reads per pair asked
+   * are packed into queries within the node's limits (`maxRounds` rounds and `maxCalls` NFDs), NFDs wanted at the same
+   * or nearby rounds together. Each query reads its NFDs at all its rounds, at most 16 reads per pair asked
    * for. Pairs read before are taken from the cache, and everything a query read is cached. The first failed query
    * cancels the others.
    */
@@ -626,7 +626,15 @@ export class NfdGhostSDK {
       return asas
     }
 
-    const [apps, asas] = await Promise.all([ownerBoxes(), nfdAssets()])
+    let apps: bigint[], asas: bigint[]
+    try {
+      ;[apps, asas] = await Promise.all([ownerBoxes(), nfdAssets()])
+    } catch (e) {
+      // these REST reads pin a round, which needs time travel on the node even for the latest one
+      if ((e as { name?: string }).name === "DTUnsupportedError")
+        throw new NfdQueryUnavailableError(`owner reads need a node with time travel: ${(e as Error).message}`)
+      throw e
+    }
     return { apps: [...new Set(apps)], asas: [...new Set(asas)] }
   }
 

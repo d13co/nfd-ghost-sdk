@@ -1,5 +1,5 @@
 import type { AlgorandClient } from "@algorandfoundation/algokit-utils"
-import { NfdReadError } from "./errors.js"
+import { NfdQueryUnavailableError, NfdReadError } from "./errors.js"
 import {
   encodeCall,
   parseLogs,
@@ -54,14 +54,10 @@ type QueryRun = (
 
 /**
  * A call error that a smaller page may avoid, as the node words it: over the opcode budget, too large or too many logs,
- * results over the response limit, or over the time limit.
+ * results over the response limit, over the ledger state a call may read, or over the time limit.
  */
 const LIMIT_ERROR =
-  /dynamic cost budget exceeded|program logs too large|too many log calls|query response too large|time ?out|timed out/i
-
-/** The node's usual query limits, for a node that doesn't say */
-const DEFAULT_MAX_CALLS = 1024
-const DEFAULT_MAX_ROUNDS = 64
+  /dynamic cost budget exceeded|program logs too large|too many log calls|query response too large|bytes of ledger state|time ?out|timed out/i
 
 const RETRY_STATUSES = new Set([502, 503, 504])
 const MAX_RETRIES = 5
@@ -150,7 +146,6 @@ type Job = {
  * call looks at, or more output than its log budget) or went over a limit with too many candidates.
  */
 export class QueryEngine {
-  private limits?: Promise<QueryLimits | undefined>
   private readonly slots: Slots
 
   constructor(
@@ -303,19 +298,20 @@ export class QueryEngine {
     }
   }
 
-  /** The most calls and rounds one HTTP request takes: the node's query limits, else the usual 1,024 and 64. */
+  /** The most calls and rounds one HTTP request takes: the node's query limits. Throws on a node without queries. */
   async requestLimits(): Promise<QueryLimits> {
     const limits = await this.queryLimits()
-    return { maxCalls: limits?.maxCalls || DEFAULT_MAX_CALLS, maxRounds: limits?.maxRounds || DEFAULT_MAX_ROUNDS }
+    if (!limits) throw new NfdQueryUnavailableError("the node reports no query limits")
+    return { maxCalls: limits.maxCalls, maxRounds: limits.maxRounds }
   }
 
-  /** The node's query limits, read once: how many requests a query splits into. */
+  /**
+   * The node's query limits: how many requests a query splits into. The fork reads them once per algod client and
+   * doesn't keep a failed read, so a failure here is thrown and the next call asks again.
+   */
   private queryLimits(): Promise<QueryLimits | undefined> {
-    if (!this.limits) {
-      const query = (this.algorand as unknown as { query?: { limits?(): Promise<QueryLimits | undefined> } }).query
-      this.limits = query?.limits ? query.limits().catch(() => undefined) : Promise.resolve(undefined)
-    }
-    return this.limits
+    const query = (this.algorand as unknown as { query?: { limits?(): Promise<QueryLimits | undefined> } }).query
+    return query?.limits ? query.limits() : Promise.resolve(undefined)
   }
 
   /**
