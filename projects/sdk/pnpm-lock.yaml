@@ -5,19 +5,19 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  algosdk: file:../../vendor/dtalgosdk-3.9.0-dt.4.1.0.0.tgz
-  '@algorandfoundation/algokit-utils': file:../../vendor/d13co-dt-algokit-utils-9.2.3-dt.4.1.0.0.tgz
+  algosdk: npm:dt-algosdk@3.9.0-dt.4.1.0.0
+  '@algorandfoundation/algokit-utils': npm:@d13co/dt-algokit-utils@9.2.3-dt.4.1.0.0
 
 importers:
 
   .:
     dependencies:
       '@algorandfoundation/algokit-utils':
-        specifier: file:../../vendor/d13co-dt-algokit-utils-9.2.3-dt.4.1.0.0.tgz
-        version: '@d13co/dt-algokit-utils@file:../../vendor/d13co-dt-algokit-utils-9.2.3-dt.4.1.0.0.tgz(dtalgosdk@file:../../vendor/dtalgosdk-3.9.0-dt.4.1.0.0.tgz)'
+        specifier: npm:@d13co/dt-algokit-utils@9.2.3-dt.4.1.0.0
+        version: '@d13co/dt-algokit-utils@9.2.3-dt.4.1.0.0(dt-algosdk@3.9.0-dt.4.1.0.0)'
       algosdk:
-        specifier: file:../../vendor/dtalgosdk-3.9.0-dt.4.1.0.0.tgz
-        version: dtalgosdk@file:../../vendor/dtalgosdk-3.9.0-dt.4.1.0.0.tgz
+        specifier: npm:dt-algosdk@3.9.0-dt.4.1.0.0
+        version: dt-algosdk@3.9.0-dt.4.1.0.0
     devDependencies:
       '@types/node':
         specifier: ^25.0.3
@@ -34,9 +34,8 @@ importers:
 
 packages:
 
-  '@d13co/dt-algokit-utils@file:../../vendor/d13co-dt-algokit-utils-9.2.3-dt.4.1.0.0.tgz':
-    resolution: {integrity: sha512-VI2kLqvfBl0hN00V3ssLXvjsqj2c+j93Eatf8oDOl9LqlPNvcQVeM/2e29CoHD1XV+JaCTZr1JNEtu869vbpiA==, tarball: file:../../vendor/d13co-dt-algokit-utils-9.2.3-dt.4.1.0.0.tgz}
-    version: 9.2.3-dt.4.1.0.0
+  '@d13co/dt-algokit-utils@9.2.3-dt.4.1.0.0':
+    resolution: {integrity: sha512-KYbqH9IGZeokL13cjv/65Dg8dai4eJGkDf2H+J6n+x76WssGDpya+19VG3BIYLIC+YqstXQZej88BpNJgZmjXg==}
     engines: {node: '>=22.0'}
     peerDependencies:
       algosdk: ^3.5.2 || ^3.9.0-dt.4.1.0.0
@@ -417,9 +416,8 @@ packages:
     resolution: {integrity: sha512-h5k/5U50IJJFpzfL6nO9jaaumfjO/f2NjK/oYB2Djzm4p9L+3T9qWpZqZ2hAbLPuuYq9wrU08WQyBTL5GbPk5Q==}
     engines: {node: '>=6'}
 
-  dtalgosdk@file:../../vendor/dtalgosdk-3.9.0-dt.4.1.0.0.tgz:
-    resolution: {integrity: sha512-+C78ke+iWJWaE2UnncmM0E7WtbBwzsEgElic03CUQnTmVjE8uc4SJ9YNx71q5pp/4IwhyXi7mQiApHNg5QJCGQ==, tarball: file:../../vendor/dtalgosdk-3.9.0-dt.4.1.0.0.tgz}
-    version: 3.9.0-dt.4.1.0.0
+  dt-algosdk@3.9.0-dt.4.1.0.0:
+    resolution: {integrity: sha512-E1DY99dKin93/APXnwWI8zqJAsEQolgp6Ql9s5dttUZ7tL2WGX7BGoo1IDoXjAR/EvXdAmujZqxgdIPGSyh54w==}
     engines: {node: '>=22.0'}
 
   es-module-lexer@1.7.0:
@@ -646,9 +644,9 @@ packages:
 
 snapshots:
 
-  '@d13co/dt-algokit-utils@file:../../vendor/d13co-dt-algokit-utils-9.2.3-dt.4.1.0.0.tgz(dtalgosdk@file:../../vendor/dtalgosdk-3.9.0-dt.4.1.0.0.tgz)':
+  '@d13co/dt-algokit-utils@9.2.3-dt.4.1.0.0(dt-algosdk@3.9.0-dt.4.1.0.0)':
     dependencies:
-      algosdk: dtalgosdk@file:../../vendor/dtalgosdk-3.9.0-dt.4.1.0.0.tgz
+      algosdk: dt-algosdk@3.9.0-dt.4.1.0.0
       buffer: 6.0.3
 
   '@esbuild/aix-ppc64@0.28.2':
@@ -899,7 +897,7 @@ snapshots:
 
   deep-eql@5.0.2: {}
 
-  dtalgosdk@file:../../vendor/dtalgosdk-3.9.0-dt.4.1.0.0.tgz:
+  dt-algosdk@3.9.0-dt.4.1.0.0:
     dependencies:
       algorand-msgpack: 1.1.0
       hi-base32: 0.5.1
