@@ -3,7 +3,7 @@ import { ABIType } from "algosdk"
 import { addressLsigAddress, nameLsigAddress, uvarint, lookupLsigProgram } from "../src/lsig.js"
 import { decodeRecord, encodeOpts, parseLogs } from "../src/reader.js"
 import { seriesRounds } from "../src/series.js"
-import { QueryEngine, type CallSpec } from "../src/engine.js"
+import { QueryEngine, requestCount, type CallSpec } from "../src/engine.js"
 import { packPairs } from "../src/sdk.js"
 
 const REG = 760937186n
@@ -162,6 +162,20 @@ describe("query engine", () => {
     expect(stats.maxInFlight).toBeLessThanOrEqual(4)
   })
 
+  it("leaves retries to the algod client: a busy node's error is thrown after one try", async () => {
+    let runs = 0
+    const busy = Object.assign(new Error("the node is busy"), { status: 503 })
+    const query = {
+      limits: async () => ({ maxCalls: 1024, maxRounds: 16 }),
+      run: async () => {
+        runs++
+        throw busy
+      },
+    }
+    await expect(new QueryEngine({ query } as never, 4, false).run([paged("busy")], undefined)).rejects.toBe(busy)
+    expect(runs).toBe(1)
+  })
+
   it("fails an ordinary call error at once, without smaller pages", async () => {
     const { algorand, stats } = fakeAlgorand(() => ({
       ok: false,
@@ -185,6 +199,20 @@ describe("query engine", () => {
     const [failed] = await new QueryEngine(always, 4, false).run([paged("logs")], undefined)
     expect(failed.outcomes[0].ok).toBe(false)
     expect(alwaysStats.runs).toBe(8) // 128 … 1
+  })
+})
+
+describe("request count", () => {
+  it("plans requests as algokit-utils splits them", () => {
+    const dt5 = { maxCalls: 1024, maxRounds: 16, maxTotalCalls: 1024 }
+    expect(requestCount(1, 1, dt5)).toBe(1)
+    expect(requestCount(1024, 1, dt5)).toBe(1)
+    expect(requestCount(64, 16, dt5)).toBe(1)
+    expect(requestCount(100, 16, dt5)).toBe(2) // 64 calls at all 16 rounds, twice (most rounds on a tie)
+    expect(requestCount(1000, 16, dt5)).toBe(16)
+    expect(requestCount(1, 100, dt5)).toBe(7)
+    // nodes before dt5: calls times rounds is no limit
+    expect(requestCount(1000, 64, { maxCalls: 1024, maxRounds: 64, maxTotalCalls: 1024 * 64 })).toBe(1)
   })
 })
 
@@ -233,6 +261,27 @@ describe("getRecordsAt packing", () => {
       const pairs = g.appIds.reduce((n, id) => n + g.rounds.filter((r) => want.get(id)!.has(r)).length, 0)
       expect(g.appIds.length * g.rounds.length).toBeLessThanOrEqual(16 * pairs)
     }
+  })
+
+  it("keeps each query within the node's calls times rounds", () => {
+    // :8080 on dt5: 1,024 calls, 16 rounds, but 1,024 calls times rounds
+    const dt5 = { maxCalls: 1024, maxRounds: 16, maxTotalCalls: 1024 }
+    const want = new Map<bigint, Set<bigint>>()
+    for (let i = 0n; i < 300n; i++) want.set(i, new Set([1n, 2n, 3n, 4n, 5n, 6n, 7n, 8n]))
+    want.set(999n, new Set(Array.from({ length: 40 }, (_, i) => BigInt(i))))
+    const groups = packPairs(want, dt5)
+    covers(groups, want)
+    for (const g of groups) {
+      expect(g.rounds.length).toBeLessThanOrEqual(16)
+      expect(g.appIds.length * g.rounds.length).toBeLessThanOrEqual(1024)
+    }
+    // a run of rounds is cut to the total too
+    const tiny = packPairs(new Map([[1n, new Set([1n, 2n, 3n, 4n, 5n])]]), {
+      maxCalls: 8,
+      maxRounds: 16,
+      maxTotalCalls: 2,
+    })
+    expect(tiny.map((g) => g.rounds.length)).toEqual([2, 2, 1])
   })
 
   it("puts NFDs at the same round together", () => {

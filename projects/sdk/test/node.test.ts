@@ -172,6 +172,36 @@ describe.skipIf(!reachable)("on a query node", () => {
     expect(await sdk.getSegmentsFor(OWNER_818, king.parentAppId!, { round: 30_000_000n })).toEqual([])
   })
 
+  it("counts the HTTP requests a query splits into as algokit-utils sends them", async () => {
+    const debug = vi.spyOn(console, "debug").mockImplementation(() => {})
+    const fetch = globalThis.fetch
+    let posts = 0
+    globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input instanceof Request ? input.url : input).includes("/v2/query")) posts++
+      return fetch(input, init)
+    }) as typeof fetch
+    try {
+      const logged = new NfdGhostSDK({
+        algorand: AlgorandClient.fromConfig({ algodConfig }),
+        registryAppId: REG,
+        debug: true,
+      })
+      await logged.prefetch()
+      debug.mockClear()
+      posts = 0
+      // 100 NFDs at 17 rounds: more than one request on any node's default limits
+      const ids = Array.from({ length: 100 }, (_, i) => KING + BigInt(i))
+      await logged.getRecordsSeries(ids, { from: 60_000_000n, to: 62_000_000n, points: 17 }, { fields: [] })
+      const [, details] = debug.mock.calls.at(-1) as [string, { queries: { http?: number }[] }]
+      const http = details.queries.reduce((n, q) => n + q.http!, 0)
+      expect(posts).toBeGreaterThan(1)
+      expect(http).toBe(posts)
+    } finally {
+      globalThis.fetch = fetch
+      debug.mockRestore()
+    }
+  })
+
   it("logs each query's args, requests, versions and timings with debug", async () => {
     const debug = vi.spyOn(console, "debug").mockImplementation(() => {})
     try {
@@ -189,7 +219,7 @@ describe.skipIf(!reachable)("on a query node", () => {
         /^nfd-ghost-sdk: 2 args \(getRecord 1, resolveName 1\) at latest \(\d+\): 1 query, 1 HTTP request; v2 1, 1 empty; \d+ ms \(\d+\)$/,
       )
       expect(details.args).toEqual([`getRecord(${KING})`, "resolveName(nfd-ghost-sdk-missing-0.algo)"])
-      expect(details.queries).toMatchObject([{ calls: 2, rounds: 1, http: 1, retries: 0 }])
+      expect(details.queries).toMatchObject([{ calls: 2, rounds: 1, http: 1 }])
     } finally {
       debug.mockRestore()
     }

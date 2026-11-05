@@ -36,16 +36,47 @@ type QueryStat = {
   calls: number
   /** Rounds it read at (1 for the latest) */
   rounds: number
-  /** HTTP requests it splits into by the node's `maxCalls` and `maxRounds`, before any split of a response too large */
+  /**
+   * HTTP requests it splits into by the node's `maxCalls`, `maxRounds` and `maxTotalCalls`, before any split by the
+   * body limit or of a response too large
+   */
   http?: number
-  /** Retries of a busy or failing gateway */
-  retries: number
   ms: number
 }
 
 type RunStats = { started: number; queries: QueryStat[] }
 
-type QueryLimits = { maxCalls: number; maxRounds: number }
+/**
+ * The most a query request may ask for: calls, rounds, and calls times rounds (`maxTotalCalls`, dt5 nodes on; older
+ * nodes don't report it, and it is then `maxCalls * maxRounds`).
+ */
+export type QueryLimits = { maxCalls: number; maxRounds: number; maxTotalCalls: number }
+
+/** The limits as the fork reports them: `maxTotalCalls` is missing before dt5. */
+type ReportedLimits = { maxCalls: number; maxRounds: number; maxTotalCalls?: number }
+
+/**
+ * The HTTP requests `query.run` splits `calls` calls at `rounds` rounds into, as dt5 algokit-utils plans them: of the
+ * splits of the rounds into requests of at most `r` rounds (spread evenly, or full with a shorter last one), the one
+ * that needs the fewest requests, each taking as many calls as fit in `maxTotalCalls` at its rounds.
+ */
+export function requestCount(
+  calls: number,
+  rounds: number,
+  { maxCalls, maxRounds, maxTotalCalls }: QueryLimits,
+): number {
+  const callsAt = (r: number) => Math.max(1, Math.min(maxCalls, Math.floor(maxTotalCalls / r)))
+  const requests = (sizes: number[]) => sizes.reduce((n, size) => n + Math.ceil(calls / callsAt(size)), 0)
+  let fewest = Infinity
+  for (let r = Math.max(1, Math.min(maxRounds, maxTotalCalls, rounds)); r >= 1; r--) {
+    const count = Math.ceil(rounds / r)
+    const base = Math.floor(rounds / count)
+    const even = Array.from({ length: count }, (_, i) => base + (i < rounds % count ? 1 : 0))
+    const full = Array.from({ length: count }, (_, i) => (i < count - 1 ? r : rounds - r * (count - 1)))
+    fewest = Math.min(fewest, requests(even), requests(full))
+  }
+  return fewest
+}
 
 type QueryRun = (
   params: { program: Uint8Array; clearProgram: Uint8Array; rounds?: bigint[]; calls: { args: Uint8Array[] }[] },
@@ -58,29 +89,6 @@ type QueryRun = (
  */
 const LIMIT_ERROR =
   /dynamic cost budget exceeded|program logs too large|too many log calls|query response too large|bytes of ledger state|time ?out|timed out/i
-
-const RETRY_STATUSES = new Set([502, 503, 504])
-const MAX_RETRIES = 5
-
-function httpStatus(e: unknown): number | undefined {
-  const err = e as { status?: number; response?: { status?: number } } | undefined
-  return err?.status ?? err?.response?.status
-}
-
-function sleep(ms: number, signal?: AbortSignal): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (signal?.aborted) return reject(signal.reason)
-    const timer = setTimeout(() => {
-      signal?.removeEventListener("abort", onAbort)
-      resolve()
-    }, ms)
-    const onAbort = () => {
-      clearTimeout(timer)
-      reject(signal!.reason)
-    }
-    signal?.addEventListener("abort", onAbort, { once: true })
-  })
-}
 
 /**
  * The query requests the SDK may have in flight at once, shared by every query: each takes up to as many as it splits
@@ -255,7 +263,10 @@ export class QueryEngine {
     job.outcome = { ok: true, records: job.records }
   }
 
-  /** One `query.run`, within the SDK's share of requests in flight, retrying a busy or failing gateway with backoff. */
+  /**
+   * One `query.run`, within the SDK's share of requests in flight. A busy or failing node is retried by the algod
+   * client's retry policy (dt-algosdk's, on the clients algokit-utils makes), not here.
+   */
   private async request(
     calls: { args: Uint8Array[] }[],
     rounds: bigint[] | undefined,
@@ -265,53 +276,47 @@ export class QueryEngine {
     // the fork reads the node's limits once per client too, so this costs a request only the first time
     const limits = await this.queryLimits()
     const roundCount = rounds?.length ?? 1
-    const http = limits && Math.ceil(calls.length / limits.maxCalls) * Math.ceil(roundCount / limits.maxRounds)
-    const stat: QueryStat | undefined = stats && { calls: calls.length, rounds: roundCount, http, retries: 0, ms: 0 }
+    const http = limits && requestCount(calls.length, roundCount, limits)
+    const stat: QueryStat | undefined = stats && { calls: calls.length, rounds: roundCount, http, ms: 0 }
     if (stat) stats!.queries.push(stat)
     const slots = await this.slots.take(http ?? this.concurrency, signal)
     const started = Date.now()
     try {
-      for (let attempt = 0; ; attempt++) {
-        try {
-          const results = await this.queryRun(
-            {
-              program: READER_PROGRAM,
-              clearProgram: READER_CLEAR_PROGRAM,
-              ...(rounds ? { rounds } : {}),
-              calls,
-            },
-            { concurrency: slots, ...(signal ? { signal } : {}) },
-          )
-          if (stat) stat.ms = Date.now() - started
-          return results
-        } catch (e) {
-          if (stat) stat.ms = Date.now() - started
-          signal?.throwIfAborted()
-          const status = httpStatus(e)
-          if (status === undefined || !RETRY_STATUSES.has(status) || attempt >= MAX_RETRIES) throw e
-          if (stat) stat.retries++
-          await sleep(Math.min(250 * 2 ** attempt, 4000), signal)
-        }
-      }
+      return await this.queryRun(
+        {
+          program: READER_PROGRAM,
+          clearProgram: READER_CLEAR_PROGRAM,
+          ...(rounds ? { rounds } : {}),
+          calls,
+        },
+        { concurrency: slots, ...(signal ? { signal } : {}) },
+      )
     } finally {
+      if (stat) stat.ms = Date.now() - started
       this.slots.give(slots)
     }
   }
 
-  /** The most calls and rounds one HTTP request takes: the node's query limits. Throws on a node without queries. */
+  /**
+   * The most calls, rounds and calls times rounds one HTTP request takes: the node's query limits. Throws on a node
+   * without queries.
+   */
   async requestLimits(): Promise<QueryLimits> {
     const limits = await this.queryLimits()
     if (!limits) throw new NfdQueryUnavailableError("the node reports no query limits")
-    return { maxCalls: limits.maxCalls, maxRounds: limits.maxRounds }
+    return limits
   }
 
   /**
    * The node's query limits: how many requests a query splits into. The fork reads them once per algod client and
    * doesn't keep a failed read, so a failure here is thrown and the next call asks again.
    */
-  private queryLimits(): Promise<QueryLimits | undefined> {
-    const query = (this.algorand as unknown as { query?: { limits?(): Promise<QueryLimits | undefined> } }).query
-    return query?.limits ? query.limits() : Promise.resolve(undefined)
+  private async queryLimits(): Promise<QueryLimits | undefined> {
+    const query = (this.algorand as unknown as { query?: { limits?(): Promise<ReportedLimits | undefined> } }).query
+    const limits = query?.limits ? await query.limits() : undefined
+    if (!limits) return undefined
+    const { maxCalls, maxRounds } = limits
+    return { maxCalls, maxRounds, maxTotalCalls: limits.maxTotalCalls || maxCalls * maxRounds }
   }
 
   /**
@@ -340,7 +345,6 @@ export class QueryEngine {
       ? stats.queries.reduce((n, q) => n + q.http!, 0)
       : undefined
     const http = httpTotal === undefined ? "" : `, ${plural(httpTotal, "HTTP request")}`
-    const retries = stats.queries.reduce((n, q) => n + q.retries, 0)
     let outcome: string
     if (results) {
       const outcomes = results.flatMap((r) => r.outcomes)
@@ -356,7 +360,7 @@ export class QueryEngine {
     }
     console.debug(
       `nfd-ghost-sdk: ${plural(specs.length, "arg")} (${counts(specs.map((s) => s.method))}) at ${at}: ` +
-        `${plural(stats.queries.length, "query", "queries")}${http}${retries ? `, ${plural(retries, "retry", "retries")}` : ""}; ` +
+        `${plural(stats.queries.length, "query", "queries")}${http}; ` +
         `${outcome}; ${Date.now() - stats.started} ms (${stats.queries.map((q) => q.ms).join(" + ")})`,
       { args: specs.map((s) => s.label), queries: stats.queries },
     )

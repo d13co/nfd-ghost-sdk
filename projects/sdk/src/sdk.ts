@@ -32,7 +32,9 @@ export type SignalOpts = Pick<ReadOpts, "signal">
 export type NfdGhostSDKParams = {
   /**
    * AlgoKit `AlgorandClient` on a dtalgod with read-only queries (`POST /v2/query`) and foreign box reads in queries,
-   * built with the dtalgorand forks of algosdk and algokit-utils. A client made from a config retries a busy node (503).
+   * built with the dtalgorand forks of algosdk and algokit-utils. The SDK doesn't retry: a client made from a config
+   * retries a busy or failing node by dt-algosdk's retry policy; with `fromClients`, wrap the HTTP client with
+   * `withRetry`.
    */
   algorand: AlgorandClient
   /** NFD registry app id: 760937186 on MainNet, 84366825 on TestNet */
@@ -120,21 +122,26 @@ const PAIR_WASTE = 16
 const OPEN_GROUPS = 32
 
 /**
- * Packs the rounds each NFD is wanted at into queries of at most `maxRounds` rounds and `maxCalls` NFDs, each one HTTP
- * request: an NFD's rounds are cut into runs of `maxRounds`, and each run, earliest rounds first, joins the first open
- * query it fits in, so NFDs wanted at the same or nearby rounds share a query. A query reads all its NFDs at all its
- * rounds, so a run only joins one while that stays within `PAIR_WASTE` reads per pair asked for.
+ * Packs the rounds each NFD is wanted at into queries of at most `maxRounds` rounds, `maxCalls` NFDs and
+ * `maxTotalCalls` NFDs times rounds, each one HTTP request: an NFD's rounds are cut into runs of `maxRounds` (or
+ * `maxTotalCalls`, if less), and each run, earliest rounds first, joins the first open query it fits in, so NFDs wanted
+ * at the same or nearby rounds share a query. A query reads all its NFDs at all its rounds, so a run only joins one
+ * while that stays within `PAIR_WASTE` reads per pair asked for.
  */
 export function packPairs(
   wanted: Map<bigint, Set<bigint>>,
-  { maxCalls, maxRounds }: { maxCalls: number; maxRounds: number },
+  {
+    maxCalls,
+    maxRounds,
+    maxTotalCalls = maxCalls * maxRounds,
+  }: { maxCalls: number; maxRounds: number; maxTotalCalls?: number },
 ): PairGroup[] {
   const ascending = (a: bigint, b: bigint) => (a < b ? -1 : a > b ? 1 : 0)
+  const run = Math.max(1, Math.min(maxRounds, maxTotalCalls))
   const items: { appId: bigint; rounds: bigint[] }[] = []
   for (const [appId, set] of wanted) {
     const rounds = [...set].sort(ascending)
-    for (let at = 0; at < rounds.length; at += maxRounds)
-      items.push({ appId, rounds: rounds.slice(at, at + maxRounds) })
+    for (let at = 0; at < rounds.length; at += run) items.push({ appId, rounds: rounds.slice(at, at + run) })
   }
   items.sort((a, b) => ascending(a.rounds[0], b.rounds[0]))
   type Group = { appIds: Set<bigint>; rounds: Set<bigint>; pairs: number }
@@ -146,6 +153,7 @@ export function packPairs(
       if (apps > maxCalls) return false
       let rounds = g.rounds.size
       for (const round of item.rounds) if (!g.rounds.has(round) && ++rounds > maxRounds) return false
+      if (apps * rounds > maxTotalCalls) return false
       return apps * rounds <= PAIR_WASTE * (g.pairs + item.rounds.length)
     })
     if (!group) {
@@ -340,7 +348,10 @@ export class NfdGhostSDK {
   // ---------------------------------------------------------------------------------------------------------------
   // Series
 
-  /** `getRecords` at each of `rounds`: one query per `maxRounds` rounds (the node's limit), each round exact. */
+  /**
+   * `getRecords` at each of `rounds`, each round exact: one query, split into HTTP requests by the node's `maxCalls`,
+   * `maxRounds` and `maxTotalCalls` (NFDs times rounds).
+   */
   async getRecordsSeries(
     appIds: (number | bigint)[],
     rounds: SeriesRounds,
@@ -397,10 +408,10 @@ export class NfdGhostSDK {
    * `FutureRoundError` before any query, and a failed read throws its error.
    *
    * Reads every NFD only at the rounds asked for it, unlike a series, which reads every key at every round: the pairs
-   * are packed into queries within the node's limits (`maxRounds` rounds and `maxCalls` NFDs), NFDs wanted at the same
-   * or nearby rounds together. Each query reads its NFDs at all its rounds, at most 16 reads per pair asked
-   * for. Pairs read before are taken from the cache, and everything a query read is cached. The first failed query
-   * cancels the others.
+   * are packed into queries within the node's limits (`maxRounds` rounds, `maxCalls` NFDs and `maxTotalCalls` NFDs
+   * times rounds), NFDs wanted at the same or nearby rounds together. Each query reads its NFDs at all its rounds, at
+   * most 16 reads per pair asked for. Pairs read before are taken from the cache, and everything a query read is
+   * cached. The first failed query cancels the others.
    */
   async getRecordsAt(
     pairs: { appId: number | bigint; round: number | bigint }[],
