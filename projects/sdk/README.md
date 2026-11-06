@@ -22,7 +22,7 @@ See [DESIGN-v2.md](/DESIGN-v2.md) for the chain facts and the design.
 
 ### The dtalgorand forks of algosdk and algokit-utils
 
-[`dt-algosdk`](https://github.com/d13co/dt-js-algorand-sdk) 3.9.0-dt.5.2.0.0 and [`@d13co/dt-algokit-utils`](https://github.com/d13co/dt-algokit-utils-ts) 9.2.3-dt.5.2.0.0 from npm, installed under the stock names, pinned exactly, and overridden so that one copy of each loads:
+[`dt-algosdk@3.9.0-dt.5.2.0.0`](https://github.com/d13co/dt-js-algorand-sdk) and [`@d13co/dt-algokit-utils@9.2.3-dt.5.2.0.0`](https://github.com/d13co/dt-algokit-utils-ts) from npm, installed under the stock names, pinned exactly, and overridden so that one copy of each loads:
 
 ```json
 {
@@ -139,7 +139,11 @@ pnpm test               # unit tests, plus integration tests against the local M
 pnpm verify             # DESIGN-v2 section 6 fixtures
 pnpm verify:rest        # latest round vs the NFD REST API (addresses.txt, v1-nfds.txt, a sample of all-nfd-apps.csv)
 pnpm verify:rounds      # past rounds vs an independent derivation from algod REST state (ROUNDS=64 APPS=120)
+pnpm check-dist         # dist/ has no Node-only imports or Buffer, so apps can bundle it for the browser
+pnpm release:check      # the version and the fork pins agree across package.json, the lockfile and this README
 ```
+
+Releases are published by GitHub Actions from a `v<version>` tag: see [RELEASING.md](/RELEASING.md).
 
 The examples and tests use `http://127.0.0.1:8080` by default; set `ALGOD_SERVER`, `ALGOD_PORT` and `ALGOD_TOKEN` for another node.
 

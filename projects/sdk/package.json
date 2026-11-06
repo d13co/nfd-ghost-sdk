@@ -24,7 +24,7 @@
     "dist/"
   ],
   "publishConfig": {
-    "tag": "dt"
+    "tag": "latest"
   },
   "scripts": {
     "prebuild": "node scripts/copy-reader.mjs",
@@ -37,7 +37,10 @@
     "test": "vitest run",
     "verify": "tsx examples/fixtures.ts",
     "verify:rest": "tsx examples/verify-rest.ts",
-    "verify:rounds": "tsx examples/verify-rounds.ts"
+    "verify:rounds": "tsx examples/verify-rounds.ts",
+    "check-dist": "node scripts/check-dist.mjs",
+    "release:check": "node scripts/release.mjs check",
+    "release:update": "node scripts/release.mjs update"
   },
   "keywords": [
     "algorand",
@@ -49,6 +52,13 @@
   ],
   "author": "",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/d13co/nfd-ghost-sdk.git",
+    "directory": "projects/sdk"
+  },
+  "homepage": "https://github.com/d13co/nfd-ghost-sdk/tree/main/projects/sdk#readme",
+  "bugs": "https://github.com/d13co/nfd-ghost-sdk/issues",
   "packageManager": "pnpm@10.11.0",
   "peerDependencies": {
     "@algorandfoundation/algokit-utils": "^9.2.3-dt.5.2.0.0",
