@@ -1,0 +1,6 @@
+# dtalgorand forks from npm, pinned exactly: one copy of each everywhere
+overrides:
+  algosdk: npm:dt-algosdk@3.9.0-dt.5.2.0.0
+  '@algorandfoundation/algokit-utils': npm:@d13co/dt-algokit-utils@9.2.3-dt.5.2.0.0
+onlyBuiltDependencies:
+  - esbuild
