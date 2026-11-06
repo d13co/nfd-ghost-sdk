@@ -6,7 +6,7 @@ import { algorand, sdk, MAINNET_REGISTRY } from "./common.js"
 import { encodeCall, encodeOpts, READER_PROGRAM, READER_CLEAR_PROGRAM, DEFAULT_FIELDS } from "../src/reader.js"
 import { addressLsigAddress } from "../src/lsig.js"
 
-const NODE = "http://127.0.0.1:8081"
+const NODE = "http://127.0.0.1:8080"
 const OWNER = "43H6L4VKWP23F3UO64GUS4M5TFT5MOZRJPUFO57M3X2SDONQXJCT5MQZRE"
 
 // 1. cost of one ownedBy call over 128 owned NFDs with every field

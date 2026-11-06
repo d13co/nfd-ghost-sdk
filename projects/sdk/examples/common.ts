@@ -5,7 +5,7 @@ import { NfdGhostSDK } from "../src/index.js"
 export const algorand = AlgorandClient.fromConfig({
   algodConfig: {
     server: process.env.ALGOD_SERVER ?? "http://127.0.0.1",
-    port: process.env.ALGOD_PORT ?? 8081,
+    port: process.env.ALGOD_PORT ?? 8080,
     token: process.env.ALGOD_TOKEN ?? "",
   },
 })

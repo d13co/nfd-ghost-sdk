@@ -7,7 +7,7 @@ import { sdk, MAINNET_REGISTRY } from "./common.js"
 import { nameLsigAddress } from "../src/lsig.js"
 import type { NfdRecord } from "../src/index.js"
 
-const NODE = `${process.env.ALGOD_SERVER ?? "http://127.0.0.1"}:${process.env.ALGOD_PORT ?? 8081}`
+const NODE = `${process.env.ALGOD_SERVER ?? "http://127.0.0.1"}:${process.env.ALGOD_PORT ?? 8080}`
 const ROUNDS = Number(process.env.ROUNDS ?? 16)
 const APPS = Number(process.env.APPS ?? 40)
 const get = async (path: string) => {
